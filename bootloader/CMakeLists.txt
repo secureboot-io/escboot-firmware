@@ -12,7 +12,7 @@ set(CPU "-mcpu=cortex-m3")
 set(FPU "")
 set(FLOAT_ABI "")
 
-set(LINKER_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/linker/STM32F407VGTX_FLASH.ld)
+set(LINKER_SCRIPT ${CMAKE_CURRENT_LIST_DIR}/linker/target/stm32f407vgtx/STM32F407VGTX_FLASH.ld)
 
 option(USE_LL_LIB "Enable LL library" ON)
 option(USE_HAL_LIB "Enable HAL library" ON)
@@ -40,6 +40,7 @@ set(VERSION_MINOR 1 CACHE STRING "Project minor version number.")
 set(VERSION_PATCH 0 CACHE STRING "Project patch version number.")
 
 include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include)
+include_directories(${CMAKE_CURRENT_SOURCE_DIR}/include/target/stm32f407vgtx)
 if(USE_SYSTEM_VIEW)
 add_definitions("-DENABLE_SYSTEMVIEW")
 endif()
@@ -54,24 +55,29 @@ set(PROJ_LIB_PATH ${CMAKE_CURRENT_SOURCE_DIR}/../libraries)
 # common libraries
 add_subdirectory(${PROJ_LIB_PATH}/CMSIS ${CMAKE_BINARY_DIR}/libraries/CMSIS)
 add_subdirectory(${PROJ_LIB_PATH}/STM32F4xx_HAL_Driver ${CMAKE_BINARY_DIR}/libraries/STM32F4xx_HAL_Driver)
+add_subdirectory(${PROJ_LIB_PATH} ${CMAKE_BINARY_DIR}/libraries)
 
 # STM32CubeMX generated source files
 set(CUBEMX_SRC
-    src/main.c
-    src/crc16.c
+    src/target/stm32f407vgtx/main.c
     src/target/stm32f407vgtx/stm32f4xx_it.c
     src/target/stm32f407vgtx/stm32f4xx_hal_msp.c
     src/target/stm32f407vgtx/system_stm32f4xx.c
     src/target/stm32f407vgtx/syscalls.c
     src/target/stm32f407vgtx/sysmem.c
     src/target/stm32f407vgtx/startup/startup_stm32f407vgtx.s
+    src/utils/micros.c
+    src/utils/millis.c
+    src/io/gpio.c
+    src/io/serialwire.c
 )
 add_executable(${ELF_TARGET} ${CUBEMX_SRC})
 target_compile_definitions(${ELF_TARGET} PUBLIC -D${MCU_FAMILY})
-target_link_libraries(${ELF_TARGET} PUBLIC cmsis stm32f4xx_hal -lc -lm -lnosys)
+target_link_libraries(${ELF_TARGET} PUBLIC libcrc cmsis stm32f4xx_hal -lc -lm -lnosys)
 target_link_libraries(${ELF_TARGET} PRIVATE -T${LINKER_SCRIPT} ${EXTRA_LINK_FLAGS})
 target_include_directories(${ELF_TARGET} PUBLIC
-  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/cubemx/Core/Inc>)
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/target/stm32f407vgtx>
+  $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/target/stm32f407vgtx/include>)
 
 ## add post-build targets
 include(${STM32_CMAKE_DIR}/cmake/stm32-gcc-postbuild.cmake)
