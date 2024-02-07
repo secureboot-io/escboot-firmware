@@ -1,8 +1,8 @@
 cmake_minimum_required(VERSION 3.0.0)
-project(stm32proj C CXX ASM)
+project(am32secureboot C CXX ASM)
 
 # adjust project folder name if necessary
-set(STM32_PROJ_FOLDER stm32proj)
+# set(STM32_PROJ_FOLDER stm32proj)
 
 message(STATUS "Building project: ${PROJECT_NAME}")
 set(STM32_CMAKE_DIR "${CMAKE_SOURCE_DIR}")
@@ -19,4 +19,5 @@ elseif(CMAKE_BUILD_TYPE MATCHES Release)
 endif()
 
 # add source folder
-add_subdirectory(src)
+add_subdirectory(bootloader)
+
