@@ -1,7 +1,5 @@
 #include "io/serialwire.h"
 
-#include "stm32f4xx_hal.h"
-
 #include "utils/millis.h"
 #include "utils/micros.h"
 #include "io/gpio.h"
@@ -11,7 +9,7 @@ bool readChar(uint8_t *buffer)
     uint32_t bitTime = millis() + START_BIT_TIMEOUT_MS;
 
     // Wait for RX to go low
-    while (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_1)) {
+    while (pinRead()) {
     	if(millis() > bitTime) {
     		return false;
     	}
@@ -25,7 +23,7 @@ bool readChar(uint8_t *buffer)
     uint8_t bit = 0;
     while (1) {
     	//Read bit
-        if (HAL_GPIO_ReadPin(GPIOC, GPIO_PIN_1))
+        if (pinRead())
         {
             bitmask |= (1 << bit);
         }
@@ -66,7 +64,7 @@ bool writeChar(uint8_t buffer)
 	uint32_t bitTime = micros();
 	for(int i = 0; i < 10; i++) {
 		//Send bit
-		HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1, bitmask & 1 ? GPIO_PIN_SET : GPIO_PIN_RESET);
+		pinWrite((bitmask & 1) == 1);
 
 		//Delay
 		bitTime += BIT_TIME;
@@ -84,7 +82,7 @@ bool readBuffer(uint8_t *buffer, size_t bufferLen, size_t *outLen) {
 	int i = 0;
 
 	//
-	pinSetInputPullDown();
+	pinSetInputPullDownMode();
 
 	// Read specified number of bytes
 	while(i < bufferLen) {
@@ -107,7 +105,7 @@ bool writeBuffer(uint8_t *buffer, size_t bufferLen) {
 	bool success;
 
 	//
-	pinSetOutput();
+	pinSetOutputMode();
 
 	while(bufferLen--)
 	{

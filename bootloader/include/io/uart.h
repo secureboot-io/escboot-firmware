@@ -31,25 +31,15 @@
  * for routines that can be used to calculate several kinds of checksums.
  */
 
-#ifndef DEF_IO_GPIO_H
-#define DEF_IO_GPIO_H
-
-#include <stdint.h>
-#include <stddef.h>
-#include <stdbool.h>
+#ifndef DEF_IO_UART_H
+#define DEF_IO_UART_H
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void pinSetInputPullDownMode();
-void pinSetOutputMode();
-void pinInit();
-void pinWrite(bool set);
-bool pinRead();
-
 #ifdef __cplusplus
-} // extern "C"
+}
 #endif
 
-#endif //DEF_IO_GPIO_H
+#endif // DEF_IO_UART_H

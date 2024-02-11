@@ -55,6 +55,12 @@ extern "C" {
 #define CMD_BOOTINIT        0x07
 #define CMD_BOOTSIGN        0x08
 
+#define ACK                 0x30
+#define NACK_BAD_CMD        0xC1
+#define NACK_BAD_CRC        0xC2
+
+int bootloader();
+
 #ifdef __cplusplus
 } // extern "C"
 #endif

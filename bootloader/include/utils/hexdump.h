@@ -1,11 +1,11 @@
 /*
- * Library: am32secureboot
- * File:    io/gpio.h
+ * Library: libcrc
+ * File:    include/checksum.h
  * Author:  Sidhant Goel
  *
  * This file is licensed under the MIT License as stated below
  *
- * Copyright (c) 2024 Sidhant Goel
+ * Copyright (c) 1999-2018 Sidhant Goel
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,25 +31,20 @@
  * for routines that can be used to calculate several kinds of checksums.
  */
 
-#ifndef DEF_IO_GPIO_H
-#define DEF_IO_GPIO_H
+#ifndef DEF_UTILS_HEXDUMP_H
+#define DEF_UTILS_HEXDUMP_H
 
 #include <stdint.h>
 #include <stddef.h>
-#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void pinSetInputPullDownMode();
-void pinSetOutputMode();
-void pinInit();
-void pinWrite(bool set);
-bool pinRead();
+void hexdump(uint8_t* buffer, size_t len);
 
 #ifdef __cplusplus
 } // extern "C"
 #endif
 
-#endif //DEF_IO_GPIO_H
+#endif // DEF_UTILS_HEXDUMP_H

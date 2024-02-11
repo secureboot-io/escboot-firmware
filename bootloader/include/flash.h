@@ -1,6 +1,6 @@
 /*
  * Library: am32secureboot
- * File:    io/gpio.h
+ * File:    include/bootloader.h
  * Author:  Sidhant Goel
  *
  * This file is licensed under the MIT License as stated below
@@ -31,25 +31,19 @@
  * for routines that can be used to calculate several kinds of checksums.
  */
 
-#ifndef DEF_IO_GPIO_H
-#define DEF_IO_GPIO_H
+#ifndef DEF_FLASH_H
+#define DEF_FLASH_H
 
 #include <stdint.h>
-#include <stddef.h>
-#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-void pinSetInputPullDownMode();
-void pinSetOutputMode();
-void pinInit();
-void pinWrite(bool set);
-bool pinRead();
+void save_flash_nolib(uint8_t *data, int length, uint32_t add);
 
 #ifdef __cplusplus
 } // extern "C"
 #endif
 
-#endif //DEF_IO_GPIO_H
+#endif //DEF_FLASH_H
