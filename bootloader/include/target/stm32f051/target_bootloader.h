@@ -1,11 +1,11 @@
-/*
- * Library: libcrc
- * File:    include/checksum.h
+/**
+ * Library: am32secureboot
+ * File:    bootloader/include/utils/hexdump.h
  * Author:  Sidhant Goel
  *
  * This file is licensed under the MIT License as stated below
  *
- * Copyright (c) 1999-2018 Sidhant Goel
+ * Copyright (c) 2024 Sidhant Goel
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -31,45 +31,23 @@
  * for routines that can be used to calculate several kinds of checksums.
  */
 
-#ifndef DEF_BOOTLOADER_H
-#define DEF_BOOTLOADER_H
-
-#include "target_bootloader.h"
+#ifndef DEF_TARGET_BOOTLOADER_H
+#define DEF_TARGET_BOOTLOADER_H
 
 #include <stdint.h>
-#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-#define CMD_RUN             0x00
-#define CMD_PROG_FLASH      0x01
-#define CMD_ERASE_FLASH     0x02
-#define CMD_READ_FLASH_SIL  0x03
-#define CMD_VERIFY_FLASH    0x03
-#define CMD_VERIFY_FLASH_ARM 0x04
-#define CMD_READ_EEPROM     0x04
-#define CMD_PROG_EEPROM     0x05
-#define CMD_READ_SRAM       0x06
-#define CMD_READ_FLASH_ATM  0x07
-#define CMD_KEEP_ALIVE      0xFD
-#define CMD_SET_ADDRESS     0xFF
-#define CMD_SET_BUFFER      0xFE
-
-#define CMD_BOOTINIT        0x07
-#define CMD_BOOTSIGN        0x08
-
-#define ACK                 0x30
-#define NACK_BAD_COMMAND    0xC1
-#define NACK_BAD_CRC        0xC2
-#define NACK_BAD_ADDRESS    0xC3
-
-int bl_main();
-bool bl_is_valid_app_address(intptr_t address);
+#define FLASH_BASE_ADDRESS                  0x08000000
+#define FLASH_APPLICATION_OFFSET            0x00001000
+#define FLASH_APPLICATION_SIZE              0x0000B000
+#define FLASH_APPLICATION_START_ADDRESS     (FLASH_BASE_ADDRESS + FLASH_APPLICATION_OFFSET)
+#define FLASH_APPLICATION_END_ADDRESS       (FLASH_APPLICATION_START_ADDRESS + FLASH_APPLICATION_SIZE)
 
 #ifdef __cplusplus
 } // extern "C"
 #endif
 
-#endif //DEF_BOOTLOADER_H
+#endif // DEF_TARGET_BOOTLOADER_H

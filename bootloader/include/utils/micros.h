@@ -40,6 +40,8 @@
 extern "C" {
 #endif
 
+extern volatile uint32_t ticks;
+
 uint32_t micros();
 
 #ifdef __cplusplus
