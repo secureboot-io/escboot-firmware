@@ -1,6 +1,6 @@
 /*
  * Library: am32secureboot
- * File:    include/bootloader.h
+ * File:    bootloader/include/flash.h
  * Author:  Sidhant Goel
  *
  * This file is licensed under the MIT License as stated below
@@ -41,7 +41,7 @@ extern "C" {
 #endif
 
 void flash_erase_page(uint32_t add);
-void flash_write(uint8_t *data, int length, uint32_t add);
+void flash_write(const uint8_t *data, int length, uint32_t add);
 
 #ifdef __cplusplus
 } // extern "C"

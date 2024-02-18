@@ -1,6 +1,6 @@
 /**
  * Library: am32secureboot
- * File:    bootloader/include/utils/hexdump.h
+ * File:    bootloader/include/target_bootloader.h
  * Author:  Sidhant Goel
  *
  * This file is licensed under the MIT License as stated below

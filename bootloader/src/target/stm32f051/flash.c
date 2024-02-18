@@ -48,7 +48,7 @@ void flash_erase_page(uint32_t add)
 	 SET_BIT(FLASH->CR, FLASH_CR_LOCK);
 }
 
-void flash_write(uint8_t *data, int length, uint32_t add)
+void flash_write(const uint8_t *data, int length, uint32_t add)
 {
 	uint16_t data_to_FLASH[length / 2];
 	memset(data_to_FLASH, 0, length / 2);

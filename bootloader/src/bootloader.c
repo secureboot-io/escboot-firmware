@@ -121,7 +121,7 @@ void processCmd(uint8_t *packet, size_t packetSize)
 
         case CMD_PROG_FLASH:
             //printf("CMD_PROG_FLASH\n");
-            if(secureboot_write(address, bufferSize, buffer))
+            if(securebootWrite(address, bufferSize, buffer))
             {
                 resp[0] = ACK;
             }
@@ -142,7 +142,7 @@ void processCmd(uint8_t *packet, size_t packetSize)
         case CMD_VERIFY_FLASH:
             //printf("CMD_VERIFY_FLASH\n");
             bufferSize = packet[1];
-            if(secureboot_read(address, bufferSize, resp))
+            if(securebootRead(address, bufferSize, resp))
             {
                 makeCrc(resp, bufferSize);
                 resp[bufferSize + 2] = ACK;
@@ -204,7 +204,7 @@ void bl_reboot()
 int bl_main()
 {
     printf("initializing\n");
-    secureboot_startup();
+    securebootInit();
     //uint8_t oldc = 0;
     //printf("testing 5 sec\n");
     // uint32_t mi = millis();

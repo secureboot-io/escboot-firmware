@@ -20,7 +20,7 @@ option(USE_HAL_LIB "Enable HAL library" ON)
 option(USE_SYSTEM_VIEW "Enable Segger SystemView library" OFF)
 
 ## auto-set variables from user input
-set(MCU_FLAGS "${CPU} -mthumb ${FPU} ${FLOAT_ABI} -O3 -ffunction-sections -fdata-sections")
+set(MCU_FLAGS "${CPU} -mthumb ${FPU} ${FLOAT_ABI} -O3 -ffunction-sections -fdata-sections -std=c17")
 set(LINK_FLAGS "${MCU_FLAGS} -Wl,--gc-sections -Wl,--print-memory-usage")
 set(EXTRA_LINK_FLAGS "-Wl,-Map=${PROJECT_NAME}.map,--cref,--no-warn-mismatch -specs=nano.specs -specs=nosys.specs")
 include(${STM32_CMAKE_DIR}/cmake/stm32-gcc-flags.cmake)

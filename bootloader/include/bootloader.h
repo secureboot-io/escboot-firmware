@@ -1,11 +1,11 @@
 /*
- * Library: libcrc
- * File:    include/checksum.h
+ * Library: am32secureboot
+ * File:    bootloader/include/bootloader.h
  * Author:  Sidhant Goel
  *
  * This file is licensed under the MIT License as stated below
  *
- * Copyright (c) 1999-2018 Sidhant Goel
+ * Copyright (c) 2024 Sidhant Goel 
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal

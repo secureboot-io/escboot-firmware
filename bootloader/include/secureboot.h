@@ -1,21 +1,168 @@
+/*
+ * Library: am32secureboot
+ * File:    bootloader/include/secureboot.h
+ * Author:  Sidhant Goel
+ *
+ * This file is licensed under the MIT License as stated below
+ *
+ * Copyright (c) 2024 Sidhant Goel 
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in all
+ * copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
+ *
+ * Description
+ * -----------
+ * The headerfile include/checksum.h contains the definitions and prototypes
+ * for routines that can be used to calculate several kinds of checksums.
+ */
 #ifndef DEF_SECUREBOOT_H
 #define DEF_SECUREBOOT_H
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <assert.h>
 
-#define SECUREBOOT_SECURE_FLAG_ADDRESS      0x0800F000
-#define SECUREBOOT_SECURE_FLAG_SIZE         1
+typedef struct __attribute__((packed))
+{
+    uint8_t manufacturerId[32];
+    uint8_t deviceId[32];
+    uint8_t manufacturerPublicKey[64];
+
+} deviceInfo_t;
+
+typedef union __attribute__((packed))
+{
+    uint8_t bytes[1024];
+    uint16_t words[512];
+    uint32_t dwords[256];
+    struct
+    {
+        uint8_t protectedFlag;
+        uint8_t enabledFlag;
+        deviceInfo_t devInfo;
+        uint8_t devicePublicKey[64];
+        uint8_t deviceSignature[64];
+        uint8_t devicePrivateKey[32];
+        uint8_t firmwareSignature[64];
+    };
+} secureboot_t;
+
+#define SECUREBOOT_PROTECTED_FLAG_ADDRESS   0x0800F000
+#define SECUREBOOT_PROTECTED_FLAG_SIZE      0x00000001
 #define SECUREBOOT_ENABLED_FLAG_ADDRESS     0x0800F001
-#define SECUREBOOT_ENABLED_FLAG_SIZE        1
+#define SECUREBOOT_ENABLED_FLAG_SIZE        0x00000001
+#define SECUREBOOT_DEVICE_INFO_ADDRESS      0x0800F002
+#define SECUREBOOT_DEVICE_INFO_SIZE         0x00000080
+
+
+_Static_assert(sizeof(deviceInfo_t) == SECUREBOOT_DEVICE_INFO_SIZE, "Device info size mismatch");
+_Static_assert(sizeof(uint8_t) == SECUREBOOT_PROTECTED_FLAG_SIZE, "Protected flag size mismatch");
+_Static_assert(sizeof(uint8_t) == SECUREBOOT_ENABLED_FLAG_SIZE, "Enabled flag size mismatch");
+
+_Static_assert(SECUREBOOT_PROTECTED_FLAG_ADDRESS + SECUREBOOT_PROTECTED_FLAG_SIZE == SECUREBOOT_ENABLED_FLAG_ADDRESS,
+    "SECUREBOOT_ENABLED_FLAG_ADDRESS overlaps SECUREBOOT_PROTECTED_FLAG_ADDRESS");
+_Static_assert(SECUREBOOT_ENABLED_FLAG_ADDRESS + SECUREBOOT_ENABLED_FLAG_SIZE == SECUREBOOT_DEVICE_INFO_ADDRESS,
+    "SECUREBOOT_DEVICE_INFO_ADDRESS overlaps SECUREBOOT_ENABLED_FLAG_ADDRESS");
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
-bool secureboot_startup();
-bool secureboot_write(uint32_t address, uint32_t bufferSize, uint8_t *buffer);
-bool secureboot_read(uint32_t address, uint32_t bufferSize, uint8_t *buffer);
+/**
+ * @brief Initialize secure boot module
+ * 
+ * @return true if successful
+ * @return false if failed
+ *
+ * @note This function should be called before any other secure boot functions
+ * 
+ */
+bool securebootInit();
+
+/**
+ * @brief Writes to secure boot area, this is used to run secureboot specific commands
+ *
+ * @param address Address to write to
+ * @param bufferSize Size of the buffer
+ * @param buffer Buffer to write
+ * @return true if successful
+ * @return false if failed
+ */
+bool securebootWrite(uint32_t address, uint32_t bufferSize, uint8_t *buffer);
+
+/**
+ * @brief Reads from secure boot area
+ *
+ * @param address Address to read from
+ * @param bufferSize Size of the buffer
+ * @param buffer Buffer to read into
+ * @return true if successful
+ * @return false if failed
+ */
+bool securebootRead(uint32_t address, uint32_t bufferSize, uint8_t *buffer);
+
+/**
+ * @brief Enables protection
+ *
+ * @return true if successful
+ * @return false if failed
+ */
+bool securebootProtect();
+
+/**
+ * @brief Disables protection
+ *
+ * @return true if successful
+ * @return false if failed
+ */
+bool securebootUnprotect();
+
+/**
+ * @brief Checks if protection is enabled
+ *
+ * @return true if protected
+ * @return false if not protected
+ */
+bool securebootIsProtected();
+
+/**
+ * @brief Checks if secure boot is enabled
+ *
+ * @return true if enabled
+ * @return false if not enabled
+ */
+bool securebootIsEnabled();
+
+/**
+ * @brief Enables secure boot
+ *
+ * @return true if successful
+ * @return false if failed
+ */
+bool securebootEnable();
+
+/**
+ * @brief Disables secure boot
+ *
+ * @return true if successful
+ * @return false if failed
+ */
+bool securebootDisable();
 
 #ifdef __cplusplus
 }

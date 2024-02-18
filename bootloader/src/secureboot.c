@@ -3,61 +3,53 @@
 #include "flash.h"
 #include "crypto/ecc.h"
 #include <stdio.h>
+#include <string.h>
+#include <assert.h>
 
 #define FLAG_ENABLED 0x00
 #define FLAG_DISABLED 0xFF
-
-typedef struct __attribute__((packed))
-{
-    uint8_t manufacturerId[32];
-    uint8_t deviceId[32];
-    uint8_t manufacturerPublicKey[64];
-
-} deviceInfo_t;
-
-typedef union __attribute__((packed))
-{
-    uint8_t bytes[1024];
-    uint16_t words[512];
-    uint32_t dwords[256];
-    struct
-    {
-        uint8_t secureFlag;
-        uint8_t enabledFlag;
-        deviceInfo_t devInfo;
-        uint8_t devicePublicKey[64];
-        uint8_t deviceSignature[64];
-        uint8_t devicePrivateKey[32];
-        uint8_t firmwareSignature[64];
-    };
-} secureboot_t;
 
 secureboot_t __attribute__((section(".secureboot"))) secureboot = {
     .bytes = {0xFF, 0xFF}};
 
 void crypto_ecc_test();
-bool secureboot_startup()
+
+bool securebootInit()
 {
+    // Initialize ecc
     bool ret = crypto_ecc_startup();
-    if (!ret) {
+    if (!ret)
+    {
         printf("Unable to start cryptograpohy engine\n");
         return false;
     }
+
+    // Test ecc, this will be removed later
     crypto_ecc_test();
+    
     crypto_ecc_cleanup();
     return true;
 }
 
-bool secureboot_read(uint32_t address, uint32_t bufferSize, uint8_t *buffer)
+uint8_t securebootGetProtectedFlag()
 {
-    if ((address == SECUREBOOT_SECURE_FLAG_ADDRESS) && (bufferSize == SECUREBOOT_SECURE_FLAG_SIZE))
+    return secureboot.protectedFlag;
+}
+
+bool securebootSetProtectedFlag(uint8_t flag)
+{
+    if (secureboot.protectedFlag == flag)
     {
-        buffer[0] = secureboot.secureFlag;
         return true;
     }
-    else if ((address == SECUREBOOT_ENABLED_FLAG_ADDRESS) && (bufferSize == SECUREBOOT_ENABLED_FLAG_SIZE))
+    else if (flag == FLAG_ENABLED)
     {
-        buffer[0] = secureboot.enabledFlag;
+        securebootProtect();
+        return true;
+    }
+    else if (flag == FLAG_DISABLED)
+    {
+        securebootUnprotect();
         return true;
     }
     else
@@ -66,56 +58,144 @@ bool secureboot_read(uint32_t address, uint32_t bufferSize, uint8_t *buffer)
     }
 }
 
-bool secureboot_init()
+bool securebootSetDeviceInfo(deviceInfo_t *deviceInfo)
 {
     secureboot_t sb;
-    sb.secureFlag = FLAG_ENABLED;
-    sb.enabledFlag = FLAG_ENABLED;
+    if (securebootIsProtected())
+    {
+        return false;
+    }
+    memcpy(&sb, &secureboot, sizeof(secureboot_t));
+    memcpy(&sb.devInfo, deviceInfo, sizeof(deviceInfo_t));
     flash_write(sb.bytes, sizeof(secureboot_t), (uint32_t)&secureboot);
+    return true;
+}
+
+bool securebootGetDeviceInfo(uint8_t *buffer)
+{
+    memcpy(buffer, &secureboot.devInfo, sizeof(deviceInfo_t));
+    return true;
+}
+
+uint8_t securebootGetEnabledFlag()
+{
+    return secureboot.enabledFlag;
+}
+
+bool securebootSetEnabledFlag(uint8_t flag)
+{
+    if(!securebootIsProtected())
+    {
+        return false;
+    }
+    if (secureboot.enabledFlag == flag)
+    {
+        return true;
+    }
+    else if (flag == FLAG_ENABLED)
+    {
+        securebootEnable();
+        return true;
+    }
+    else if (flag == FLAG_DISABLED)
+    {
+        securebootDisable();
+        return true;
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool securebootIsProtected()
+{
+    return secureboot.protectedFlag == FLAG_ENABLED;
+}
+
+bool securebootIsEnabled()
+{
+    return secureboot.enabledFlag == FLAG_ENABLED;
+}
+
+bool securebootRead(uint32_t address, uint32_t bufferSize, uint8_t *buffer)
+{
+    if ((address == SECUREBOOT_PROTECTED_FLAG_ADDRESS) && (bufferSize == SECUREBOOT_PROTECTED_FLAG_SIZE))
+    {
+        buffer[0] = securebootGetProtectedFlag();
+        return true;
+    }
+    else if ((address == SECUREBOOT_ENABLED_FLAG_ADDRESS) && (bufferSize == SECUREBOOT_ENABLED_FLAG_SIZE))
+    {
+        buffer[0] = securebootGetEnabledFlag();
+        return true;
+    }
+    else if ((address == SECUREBOOT_DEVICE_INFO_ADDRESS) && (bufferSize == SECUREBOOT_DEVICE_INFO_SIZE))
+    {
+        return securebootGetDeviceInfo(buffer);
+    }
+    else
+    {
+        return false;
+    }
+}
+
+bool securebootProtect()
+{
+    secureboot_t sb;
+    memcpy(&sb, &secureboot, sizeof(secureboot_t));
+
+    sb.protectedFlag = FLAG_ENABLED;
+    sb.enabledFlag = FLAG_ENABLED;
+    
+    flash_write(sb.bytes, sizeof(secureboot_t), (uint32_t)&secureboot);
+    
     bl_reboot();
     return true;
 }
 
-bool secureboot_deinit()
+bool securebootUnprotect()
 {
     flash_erase_page((uint32_t)&secureboot);
     bl_reboot();
     return true;
 }
 
-bool secureboot_write(uint32_t address, uint32_t bufferSize, uint8_t *buffer)
+bool securebootEnable()
 {
-    if ((address == SECUREBOOT_SECURE_FLAG_ADDRESS) && (bufferSize == SECUREBOOT_SECURE_FLAG_SIZE))
+    secureboot_t sb;
+
+    memcpy(&sb, &secureboot, sizeof(secureboot_t));
+    sb.enabledFlag = FLAG_ENABLED;
+    
+    flash_write((uint8_t *)&sb, SECUREBOOT_ENABLED_FLAG_SIZE, SECUREBOOT_ENABLED_FLAG_ADDRESS);
+    return true;
+}
+
+bool securebootDisable()
+{
+    secureboot_t sb;
+
+    memcpy(&sb, &secureboot, sizeof(secureboot_t));
+    sb.enabledFlag = FLAG_DISABLED;
+    
+    flash_write((uint8_t*)&sb, SECUREBOOT_ENABLED_FLAG_SIZE, SECUREBOOT_ENABLED_FLAG_ADDRESS);
+    return true;
+}
+
+bool securebootWrite(uint32_t address, uint32_t bufferSize, uint8_t *buffer)
+{
+    if ((address == SECUREBOOT_PROTECTED_FLAG_ADDRESS) && (bufferSize == SECUREBOOT_PROTECTED_FLAG_SIZE))
     {
-        // Chnaging secure flag
-        if (secureboot.secureFlag == buffer[0])
-        {
-            // no change
-            return true;
-        }
-        else if (buffer[0] == FLAG_ENABLED)
-        {
-            // enabling secure boot
-            secureboot_init();
-            return true;
-        }
-        else if (buffer[0] == FLAG_DISABLED)
-        {
-            // disabling secure boot
-            secureboot_deinit();
-            return true;
-        }
-        else
-        {
-            // invalid value
-            return false;
-        }
-        return true;
+        return securebootSetProtectedFlag(buffer[0]);
     }
     else if ((address == SECUREBOOT_ENABLED_FLAG_ADDRESS) && (bufferSize == SECUREBOOT_ENABLED_FLAG_SIZE))
     {
-        secureboot.enabledFlag = buffer[0];
-        return true;
+        return securebootSetEnabledFlag(buffer[0]);
+    }
+    else if ((address == SECUREBOOT_DEVICE_INFO_ADDRESS) && (bufferSize == SECUREBOOT_DEVICE_INFO_SIZE))
+    {
+        return securebootSetDeviceInfo((deviceInfo_t *)buffer);
     }
     else
     {
@@ -123,19 +203,3 @@ bool secureboot_write(uint32_t address, uint32_t bufferSize, uint8_t *buffer)
     }
 }
 
-// bool secureboot_enable()
-// {
-//     uint8_t enabledFlag = 0x7c;
-//     return secureboot_write(SECUREBOOT_ENABLED_FLAG_ADDRESS, SECUREBOOT_ENABLED_FLAG_SIZE, &enabledFlag);
-// }
-
-// bool secureboot_disable()
-// {
-//     uint8_t enabledFlag = 0x00;
-//     return secureboot_write(SECUREBOOT_ENABLED_FLAG_ADDRESS, SECUREBOOT_ENABLED_FLAG_SIZE, &enabledFlag);
-// }
-
-// bool secureboot_verify(uint32_t address, uint32_t bufferSize, uint8_t *buffer)
-// {
-//     return true;
-// }

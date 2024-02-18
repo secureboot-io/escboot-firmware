@@ -1,6 +1,6 @@
 /*
- * Library: libcrc
- * File:    include/checksum.h
+ * Library: am32secureboot
+ * File:    bootloader/include/utils/micros.h
  * Author:  Sidhant Goel
  *
  * This file is licensed under the MIT License as stated below
