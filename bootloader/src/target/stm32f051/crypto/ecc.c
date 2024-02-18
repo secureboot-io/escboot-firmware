@@ -23,7 +23,9 @@
 /* Includes ------------------------------------------------------------------*/
 #include <string.h>
 #include "cmox_crypto.h"
-
+#include "crypto/entropy.h"
+#include "utils/hexdump.h"
+#include "ecc/cmox_ecdsa.h"
 /* Global variables ----------------------------------------------------------*/
 /* ECC context */
 cmox_ecc_handle_t Ecc_Ctx;
@@ -99,8 +101,30 @@ uint8_t Computed_Signature[CMOX_ECC_SECP256R1_SIG_LEN];
  * @param  None
  * @retval None
  */
+
+
+bool crypto_ecc_generate(uint8_t *privateKey, size_t privateKeyLength, uint8_t *publicKey, size_t publicKeyLength)
+{
+    printf("Generating ECC keypair\n");
+    uint8_t rand[32];
+    Entropy_Gather(256, rand);
+    cmox_ecc_construct(&Ecc_Ctx, CMOX_ECC256_MATH_FUNCS, Working_Buffer, sizeof(Working_Buffer));
+    cmox_ecc_retval_t retval = cmox_ecdsa_keyGen(&Ecc_Ctx, CMOX_ECC_SECP256R1_HIGHMEM, rand, 32, privateKey, &privateKeyLength, publicKey, &publicKeyLength);
+
+    if(retval != CMOX_ECC_SUCCESS)
+    {
+        printf("cmox_ecdsa_keyGen failed, ret=%d\n", (int)retval);
+        return false;
+    }
+    
+    cmox_ecc_cleanup(&Ecc_Ctx);
+    return true;
+}
+
 bool crypto_ecc_startup()
 {
+    uint8_t pub[64];
+    uint8_t prv[32];
     if (cmox_initialize(NULL) != CMOX_INIT_SUCCESS)
     {
         return false;
@@ -108,7 +132,7 @@ bool crypto_ecc_startup()
     return true;
 }
 
-void crypto_ecc_test()
+void test()
 {
     cmox_hash_retval_t hretval;
     cmox_ecc_retval_t retval;

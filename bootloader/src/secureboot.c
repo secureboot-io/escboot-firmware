@@ -5,6 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
+#include "utils/hexdump.h"
 
 #define FLAG_ENABLED 0x00
 #define FLAG_DISABLED 0xFF
@@ -16,18 +17,6 @@ void crypto_ecc_test();
 
 bool securebootInit()
 {
-    // Initialize ecc
-    bool ret = crypto_ecc_startup();
-    if (!ret)
-    {
-        printf("Unable to start cryptograpohy engine\n");
-        return false;
-    }
-
-    // Test ecc, this will be removed later
-    crypto_ecc_test();
-    
-    crypto_ecc_cleanup();
     return true;
 }
 
@@ -66,7 +55,7 @@ bool securebootSetDeviceInfo(deviceInfo_t *deviceInfo)
         return false;
     }
     memcpy(&sb, &secureboot, sizeof(secureboot_t));
-    memcpy(&sb.devInfo, deviceInfo, sizeof(deviceInfo_t));
+    memcpy(&sb.devInfo, deviceInfo, SECUREBOOT_DEVICE_INFO_WRITE_SIZE);
     flash_write(sb.bytes, sizeof(secureboot_t), (uint32_t)&secureboot);
     return true;
 }
@@ -147,6 +136,20 @@ bool securebootProtect()
 
     sb.protectedFlag = FLAG_ENABLED;
     sb.enabledFlag = FLAG_ENABLED;
+
+    //Generate a key pair
+    if (!crypto_ecc_startup())
+    {
+        return false;
+    }
+
+    if (!crypto_ecc_generate(sb.devicePrivateKey, sizeof(sb.devicePrivateKey), sb.devInfo.devicePublicKey, sizeof(sb.devInfo.devicePublicKey)))
+    {
+        crypto_ecc_cleanup();
+        return false;
+    }
+
+    crypto_ecc_cleanup();
     
     flash_write(sb.bytes, sizeof(secureboot_t), (uint32_t)&secureboot);
     
@@ -193,7 +196,7 @@ bool securebootWrite(uint32_t address, uint32_t bufferSize, uint8_t *buffer)
     {
         return securebootSetEnabledFlag(buffer[0]);
     }
-    else if ((address == SECUREBOOT_DEVICE_INFO_ADDRESS) && (bufferSize == SECUREBOOT_DEVICE_INFO_SIZE))
+    else if ((address == SECUREBOOT_DEVICE_INFO_ADDRESS) && (bufferSize == SECUREBOOT_DEVICE_INFO_WRITE_SIZE))
     {
         return securebootSetDeviceInfo((deviceInfo_t *)buffer);
     }

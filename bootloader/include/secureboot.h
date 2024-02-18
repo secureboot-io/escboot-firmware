@@ -42,6 +42,7 @@ typedef struct __attribute__((packed))
     uint8_t manufacturerId[32];
     uint8_t deviceId[32];
     uint8_t manufacturerPublicKey[64];
+    uint8_t devicePublicKey[64];
 
 } deviceInfo_t;
 
@@ -55,7 +56,6 @@ typedef union __attribute__((packed))
         uint8_t protectedFlag;
         uint8_t enabledFlag;
         deviceInfo_t devInfo;
-        uint8_t devicePublicKey[64];
         uint8_t deviceSignature[64];
         uint8_t devicePrivateKey[32];
         uint8_t firmwareSignature[64];
@@ -67,7 +67,8 @@ typedef union __attribute__((packed))
 #define SECUREBOOT_ENABLED_FLAG_ADDRESS     0x0800F001
 #define SECUREBOOT_ENABLED_FLAG_SIZE        0x00000001
 #define SECUREBOOT_DEVICE_INFO_ADDRESS      0x0800F002
-#define SECUREBOOT_DEVICE_INFO_SIZE         0x00000080
+#define SECUREBOOT_DEVICE_INFO_SIZE         0x000000C0
+#define SECUREBOOT_DEVICE_INFO_WRITE_SIZE   0x00000080
 
 
 _Static_assert(sizeof(deviceInfo_t) == SECUREBOOT_DEVICE_INFO_SIZE, "Device info size mismatch");

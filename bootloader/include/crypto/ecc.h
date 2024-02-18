@@ -35,12 +35,32 @@
 
 #include <stdint.h>
 #include <stdbool.h>
+#include <stddef.h>
 
 #ifdef __cplusplus
 extern "C" {
 #endif
 
+/**
+ * @brief Initialize the ECC module
+*/
 bool crypto_ecc_startup();
+
+/**
+ * @brief Generate a new ECC key pair
+ * 
+ * @param privateKey The buffer to store the private key
+ * @param privateKeyLength The length of the private key buffer
+ * @param publicKey The buffer to store the public key
+ * @param publicKeyLength The length of the public key buffer
+ * @return true if the key pair was generated successfully
+ * @return false if the key pair could not be generated
+ */
+bool crypto_ecc_generate(uint8_t *privateKey, size_t privateKeyLength, uint8_t *publicKey, size_t publicKeyLength);
+
+/**
+ * @brief Clean up the ECC module
+*/
 void crypto_ecc_cleanup();
 
 #ifdef __cplusplus
