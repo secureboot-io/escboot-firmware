@@ -40,7 +40,8 @@
 extern "C" {
 #endif
 
-void save_flash_nolib(uint8_t *data, int length, uint32_t add);
+void flash_erase_page(uint32_t add);
+void flash_write(uint8_t *data, int length, uint32_t add);
 
 #ifdef __cplusplus
 } // extern "C"

@@ -1,4 +1,5 @@
 #include "bootloader.h"
+#include "target_bootloader.h"
 #include "stm32f0xx_ll_usart.h"
 #include "stm32f0xx_ll_gpio.h"
 #include "stm32f0xx_ll_bus.h"
@@ -6,9 +7,15 @@
 #include "stm32f0xx_ll_system.h"
 #include "stm32f0xx_ll_utils.h"
 #include "stm32f0xx_ll_cortex.h"
+#include "cmox_crypto.h"
 
 void SystemClock_Config(void);
 static void MX_USART1_UART_Init(void);
+
+void bl_target_reboot()
+{
+    NVIC_SystemReset();
+}
 
 uint8_t UART1_Rx()
 {
@@ -89,9 +96,9 @@ void SystemClock_Config(void)
 
 static void MX_USART1_UART_Init(void)
 {
-    LL_USART_InitTypeDef USART_InitStruct = {0};
+    //LL_USART_InitTypeDef USART_InitStruct = {0};
 
-    LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
+    //LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
 
     /* Peripheral clock enable */
     LL_APB1_GRP2_EnableClock(LL_APB1_GRP2_PERIPH_USART1);

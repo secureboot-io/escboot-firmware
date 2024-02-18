@@ -46,6 +46,8 @@ extern "C" {
 #define FLASH_APPLICATION_START_ADDRESS     (FLASH_BASE_ADDRESS + FLASH_APPLICATION_OFFSET)
 #define FLASH_APPLICATION_END_ADDRESS       (FLASH_APPLICATION_START_ADDRESS + FLASH_APPLICATION_SIZE)
 
+void bl_target_reboot();
+
 #ifdef __cplusplus
 } // extern "C"
 #endif

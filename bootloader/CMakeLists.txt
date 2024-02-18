@@ -83,6 +83,9 @@ set(TARGET_STM32F051_SRC
     src/target/stm32f051/utils/millis.c
     src/target/stm32f051/io/gpio.c
     src/target/stm32f051/io/uart.c
+    src/target/stm32f051/crypto/cmox_low_level.c
+    src/target/stm32f051/crypto/ecc.c
+    src/target/stm32f051/crypto/entropy.c
     src/target/stm32f051/startup/startup_stm32f051r8tx.s
 )
 
@@ -92,10 +95,11 @@ set(CUBEMX_SRC
     src/utils/hexdump.c
     src/io/serialwire.c
     src/bootloader.c
+    src/secureboot.c
 )
 add_executable(${ELF_TARGET} ${CUBEMX_SRC})
 target_compile_definitions(${ELF_TARGET} PUBLIC -D${MCU_FAMILY})
-target_link_libraries(${ELF_TARGET} PUBLIC libcrc cmsis stm32f0xx_hal -lc -lm -lnosys)
+target_link_libraries(${ELF_TARGET} PUBLIC cmox libcrc cmsis stm32f0xx_hal -lc -lm -lnosys)
 target_link_libraries(${ELF_TARGET} PRIVATE -T${LINKER_SCRIPT} ${EXTRA_LINK_FLAGS})
 target_include_directories(${ELF_TARGET} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/target/stm32f051>)

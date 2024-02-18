@@ -18,9 +18,37 @@
 uint32_t FLASH_FKEY1 =0x45670123;
 uint32_t FLASH_FKEY2 =0xCDEF89AB;
 
+void flash_erase_page(uint32_t add)
+{
+	// unlock flash
+	while ((FLASH->SR & FLASH_SR_BSY) != 0) {
+	/*  add time-out*/
+	}
+	if ((FLASH->CR & FLASH_CR_LOCK) != 0) {
+	FLASH->KEYR = FLASH_FKEY1;
+	FLASH->KEYR = FLASH_FKEY2;
+	}
 
+	// erase page if address even divisable by 1024
+	 if((add % 1024) == 0){
+	FLASH->CR |= FLASH_CR_PER;
+	FLASH->AR = add;
+	FLASH->CR |= FLASH_CR_STRT;
+	while ((FLASH->SR & FLASH_SR_BSY) != 0){
+	/*  add time-out */
+	}
+	if ((FLASH->SR & FLASH_SR_EOP) != 0){
+	FLASH->SR = FLASH_SR_EOP;
+	}
+	else{
+	/* error */
+	}
+	FLASH->CR &= ~FLASH_CR_PER;
+	}
+	 SET_BIT(FLASH->CR, FLASH_CR_LOCK);
+}
 
-void save_flash_nolib(uint8_t *data, int length, uint32_t add)
+void flash_write(uint8_t *data, int length, uint32_t add)
 {
 	uint16_t data_to_FLASH[length / 2];
 	memset(data_to_FLASH, 0, length / 2);
@@ -78,14 +106,4 @@ void save_flash_nolib(uint8_t *data, int length, uint32_t add)
 				  index++;
 		  }
 	 SET_BIT(FLASH->CR, FLASH_CR_LOCK);
-}
-
-
-
-
-void read_flash_bin(uint8_t*  data , uint32_t add , int out_buff_len){
-	//volatile uint32_t read_data;
-	for (int i = 0; i < out_buff_len ; i ++){
-		data[i] = *(uint8_t*)(add + i);
-	}
 }

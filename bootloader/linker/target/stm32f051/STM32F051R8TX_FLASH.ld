@@ -44,9 +44,10 @@ _Min_Stack_Size = 0x400; /* required amount of stack */
 /* Memories definition */
 MEMORY
 {
-  RAM    (xrw)    : ORIGIN = 0x20000000,   LENGTH = 8K
-  FLASH    (rx)    : ORIGIN = 0x8000000,   LENGTH = 4K
-  FLASH2    (rx)    : ORIGIN = 0x800C000,   LENGTH = 16K
+  RAM           (xrw)    : ORIGIN = 0x20000000,   LENGTH = 8K
+  FLASH_BOOT1    (rx)    : ORIGIN = 0x8000000,    LENGTH = 4K
+  FLASH_BOOT2    (rx)    : ORIGIN = 0x8009000,    LENGTH = 27K
+  FLASH_SECURE   (r)     : ORIGIN = 0x800FC00,    LENGTH = 1k
 }
 
 /* Sections */
@@ -58,13 +59,18 @@ SECTIONS
     . = ALIGN(4);
     KEEP(*(.isr_vector)) /* Startup code */
     . = ALIGN(4);
-  } >FLASH
+  } >FLASH_BOOT1
 
   .text2 : 
   {
     *(.text)           /* .text sections (code) */
     *(.text*)          /* .text* sections (code) */
-  } >FLASH2
+  } >FLASH_BOOT2
+
+  .secureboot :
+  {
+    PROVIDE ( __secureboot_region_start__ = . );
+  } >FLASH_SECURE
 
   /* The program code and other data into "FLASH" Rom type memory */
   .text :
@@ -81,7 +87,7 @@ SECTIONS
 
     . = ALIGN(4);
     _etext = .;        /* define a global symbols at end of code */
-  } >FLASH
+  } >FLASH_BOOT1
 
   /* Constant data into "FLASH" Rom type memory */
   .rodata :
@@ -90,13 +96,13 @@ SECTIONS
     *(.rodata)         /* .rodata sections (constants, strings, etc.) */
     *(.rodata*)        /* .rodata* sections (constants, strings, etc.) */
     . = ALIGN(4);
-  } >FLASH
+  } >FLASH_BOOT1
 
   .ARM.extab   : {
     . = ALIGN(4);
     *(.ARM.extab* .gnu.linkonce.armextab.*)
     . = ALIGN(4);
-  } >FLASH
+  } >FLASH_BOOT1
 
   .ARM : {
     . = ALIGN(4);
@@ -104,7 +110,7 @@ SECTIONS
     *(.ARM.exidx*)
     __exidx_end = .;
     . = ALIGN(4);
-  } >FLASH
+  } >FLASH_BOOT1
 
   .preinit_array     :
   {
@@ -113,7 +119,7 @@ SECTIONS
     KEEP (*(.preinit_array*))
     PROVIDE_HIDDEN (__preinit_array_end = .);
     . = ALIGN(4);
-  } >FLASH
+  } >FLASH_BOOT1
 
   .init_array :
   {
@@ -123,7 +129,7 @@ SECTIONS
     KEEP (*(.init_array*))
     PROVIDE_HIDDEN (__init_array_end = .);
     . = ALIGN(4);
-  } >FLASH
+  } >FLASH_BOOT1
 
   .fini_array :
   {
@@ -133,7 +139,7 @@ SECTIONS
     KEEP (*(.fini_array*))
     PROVIDE_HIDDEN (__fini_array_end = .);
     . = ALIGN(4);
-  } >FLASH
+  } >FLASH_BOOT1
 
   /* Used by the startup to initialize data */
   _sidata = LOADADDR(.data);
@@ -151,7 +157,7 @@ SECTIONS
     . = ALIGN(4);
     _edata = .;        /* define a global symbol at data end */
 
-  } >RAM AT> FLASH
+  } >RAM AT> FLASH_BOOT1
 
   /* Uninitialized data section into "RAM" Ram type memory */
   . = ALIGN(4);
