@@ -64,21 +64,21 @@ typedef union __attribute__((packed))
 
 #define SECUREBOOT_PROTECTED_FLAG_ADDRESS   0x0800F000
 #define SECUREBOOT_PROTECTED_FLAG_SIZE      0x00000001
-#define SECUREBOOT_ENABLED_FLAG_ADDRESS     0x0800F001
-#define SECUREBOOT_ENABLED_FLAG_SIZE        0x00000001
-#define SECUREBOOT_DEVICE_INFO_ADDRESS      0x0800F002
+#define SECUREBOOT_DEVICE_INFO_ADDRESS      0x0800F001
 #define SECUREBOOT_DEVICE_INFO_SIZE         0x000000C0
 #define SECUREBOOT_DEVICE_INFO_WRITE_SIZE   0x00000080
+#define SECUREBOOT_DEVICE_SIGNATURE_ADDRESS 0x0800F0C1
+#define SECUREBOOT_DEVICE_SIGNATURE_SIZE    0x00000040
 
 
 _Static_assert(sizeof(deviceInfo_t) == SECUREBOOT_DEVICE_INFO_SIZE, "Device info size mismatch");
 _Static_assert(sizeof(uint8_t) == SECUREBOOT_PROTECTED_FLAG_SIZE, "Protected flag size mismatch");
-_Static_assert(sizeof(uint8_t) == SECUREBOOT_ENABLED_FLAG_SIZE, "Enabled flag size mismatch");
+_Static_assert(sizeof(uint8_t[64]) == SECUREBOOT_DEVICE_SIGNATURE_SIZE, "Device signature size mismatch");
 
-_Static_assert(SECUREBOOT_PROTECTED_FLAG_ADDRESS + SECUREBOOT_PROTECTED_FLAG_SIZE == SECUREBOOT_ENABLED_FLAG_ADDRESS,
-    "SECUREBOOT_ENABLED_FLAG_ADDRESS overlaps SECUREBOOT_PROTECTED_FLAG_ADDRESS");
-_Static_assert(SECUREBOOT_ENABLED_FLAG_ADDRESS + SECUREBOOT_ENABLED_FLAG_SIZE == SECUREBOOT_DEVICE_INFO_ADDRESS,
-    "SECUREBOOT_DEVICE_INFO_ADDRESS overlaps SECUREBOOT_ENABLED_FLAG_ADDRESS");
+_Static_assert(SECUREBOOT_PROTECTED_FLAG_ADDRESS + SECUREBOOT_PROTECTED_FLAG_SIZE == SECUREBOOT_DEVICE_INFO_ADDRESS,
+    "SECUREBOOT_DEVICE_INFO_ADDRESS overlaps SECUREBOOT_PROTECTED_FLAG_ADDRESS");
+_Static_assert(SECUREBOOT_DEVICE_INFO_ADDRESS + SECUREBOOT_DEVICE_INFO_SIZE == SECUREBOOT_DEVICE_SIGNATURE_ADDRESS,
+    "SECUREBOOT_DEVICE_SIGNATURE_ADDRESS overlaps SECUREBOOT_DEVICE_INFO_ADDRESS");
 
 #ifdef __cplusplus
 extern "C" {
@@ -142,28 +142,15 @@ bool securebootUnprotect();
 bool securebootIsProtected();
 
 /**
- * @brief Checks if secure boot is enabled
- *
- * @return true if enabled
- * @return false if not enabled
- */
-bool securebootIsEnabled();
+ * @brief Gets device info signature
+*/
+bool securebootGetDeviceInfoSignature(uint8_t *buffer);
 
 /**
- * @brief Enables secure boot
- *
- * @return true if successful
- * @return false if failed
- */
-bool securebootEnable();
+ * @brief Sets device info signature
 
-/**
- * @brief Disables secure boot
- *
- * @return true if successful
- * @return false if failed
- */
-bool securebootDisable();
+*/
+bool secureBootSetDeviceInfoSignature(uint8_t *buffer);
 
 #ifdef __cplusplus
 }

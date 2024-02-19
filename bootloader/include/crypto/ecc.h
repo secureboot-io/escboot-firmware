@@ -57,7 +57,7 @@ bool crypto_ecc_startup();
  * @return false if the key pair could not be generated
  */
 bool crypto_ecc_generate(uint8_t *privateKey, size_t privateKeyLength, uint8_t *publicKey, size_t publicKeyLength);
-
+bool crypto_ecc_verify(uint8_t *data, size_t dataLength, uint8_t *signature, size_t signatureLength, uint8_t *publicKey, size_t publicKeyLength);
 /**
  * @brief Clean up the ECC module
 */

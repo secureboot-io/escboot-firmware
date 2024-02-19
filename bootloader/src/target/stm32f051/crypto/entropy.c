@@ -52,7 +52,7 @@ void TIM_IRQ_HANDLER(void);
  * @param  pEntropy  Buffer to receive entropy data (must be enough large to contain nbBits bits)
  * @retval None
  */
-void Entropy_Gather(uint32_t nbBits, volatile uint8_t *pEntropy)
+void entropyGather(uint32_t nbBits, volatile uint8_t *pEntropy)
 {
     EntropyIndex = 0;
     EntropyMax = nbBits;

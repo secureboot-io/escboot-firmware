@@ -13,8 +13,6 @@
 secureboot_t __attribute__((section(".secureboot"))) secureboot = {
     .bytes = {0xFF, 0xFF}};
 
-void crypto_ecc_test();
-
 bool securebootInit()
 {
     return true;
@@ -47,6 +45,42 @@ bool securebootSetProtectedFlag(uint8_t flag)
     }
 }
 
+bool securebootGetDeviceInfoSignature(uint8_t *buffer)
+{
+    memcpy(buffer, secureboot.deviceSignature, sizeof(secureboot.deviceSignature));
+    return true;
+}
+
+bool securebootSetDeviceInfoSignature(uint8_t *buffer)
+{
+    secureboot_t sb;
+    if (!securebootIsProtected())
+    {
+        return false;
+    }
+    // Verify signature
+    if (!crypto_ecc_startup())
+    {
+        return false;
+    }
+    if (!crypto_ecc_verify((uint8_t *)&secureboot.devInfo, sizeof(secureboot.devInfo), buffer, 64, secureboot.devInfo.manufacturerPublicKey, 64))
+    {
+        printf("Signature verification failed\n");
+        crypto_ecc_cleanup();
+        return false;
+    }
+    crypto_ecc_cleanup();
+    
+    // Write signature
+    memcpy(&sb, &secureboot, sizeof(secureboot_t));
+    memcpy(sb.deviceSignature, buffer, sizeof(secureboot.deviceSignature));
+
+    flash_write(sb.bytes, sizeof(secureboot_t), (uint32_t)&secureboot);
+    // reboot
+    bl_reboot();
+    return true;
+}
+
 bool securebootSetDeviceInfo(deviceInfo_t *deviceInfo)
 {
     secureboot_t sb;
@@ -66,45 +100,9 @@ bool securebootGetDeviceInfo(uint8_t *buffer)
     return true;
 }
 
-uint8_t securebootGetEnabledFlag()
-{
-    return secureboot.enabledFlag;
-}
-
-bool securebootSetEnabledFlag(uint8_t flag)
-{
-    if(!securebootIsProtected())
-    {
-        return false;
-    }
-    if (secureboot.enabledFlag == flag)
-    {
-        return true;
-    }
-    else if (flag == FLAG_ENABLED)
-    {
-        securebootEnable();
-        return true;
-    }
-    else if (flag == FLAG_DISABLED)
-    {
-        securebootDisable();
-        return true;
-    }
-    else
-    {
-        return false;
-    }
-}
-
 bool securebootIsProtected()
 {
     return secureboot.protectedFlag == FLAG_ENABLED;
-}
-
-bool securebootIsEnabled()
-{
-    return secureboot.enabledFlag == FLAG_ENABLED;
 }
 
 bool securebootRead(uint32_t address, uint32_t bufferSize, uint8_t *buffer)
@@ -114,14 +112,13 @@ bool securebootRead(uint32_t address, uint32_t bufferSize, uint8_t *buffer)
         buffer[0] = securebootGetProtectedFlag();
         return true;
     }
-    else if ((address == SECUREBOOT_ENABLED_FLAG_ADDRESS) && (bufferSize == SECUREBOOT_ENABLED_FLAG_SIZE))
-    {
-        buffer[0] = securebootGetEnabledFlag();
-        return true;
-    }
     else if ((address == SECUREBOOT_DEVICE_INFO_ADDRESS) && (bufferSize == SECUREBOOT_DEVICE_INFO_SIZE))
     {
         return securebootGetDeviceInfo(buffer);
+    }
+    else if ((address == SECUREBOOT_DEVICE_SIGNATURE_ADDRESS) && (bufferSize == SECUREBOOT_DEVICE_SIGNATURE_SIZE))
+    {
+        return securebootGetDeviceInfoSignature(buffer);
     }
     else
     {
@@ -137,7 +134,7 @@ bool securebootProtect()
     sb.protectedFlag = FLAG_ENABLED;
     sb.enabledFlag = FLAG_ENABLED;
 
-    //Generate a key pair
+    // Generate a key pair
     if (!crypto_ecc_startup())
     {
         return false;
@@ -150,9 +147,9 @@ bool securebootProtect()
     }
 
     crypto_ecc_cleanup();
-    
+
     flash_write(sb.bytes, sizeof(secureboot_t), (uint32_t)&secureboot);
-    
+
     bl_reboot();
     return true;
 }
@@ -164,45 +161,22 @@ bool securebootUnprotect()
     return true;
 }
 
-bool securebootEnable()
-{
-    secureboot_t sb;
-
-    memcpy(&sb, &secureboot, sizeof(secureboot_t));
-    sb.enabledFlag = FLAG_ENABLED;
-    
-    flash_write((uint8_t *)&sb, SECUREBOOT_ENABLED_FLAG_SIZE, SECUREBOOT_ENABLED_FLAG_ADDRESS);
-    return true;
-}
-
-bool securebootDisable()
-{
-    secureboot_t sb;
-
-    memcpy(&sb, &secureboot, sizeof(secureboot_t));
-    sb.enabledFlag = FLAG_DISABLED;
-    
-    flash_write((uint8_t*)&sb, SECUREBOOT_ENABLED_FLAG_SIZE, SECUREBOOT_ENABLED_FLAG_ADDRESS);
-    return true;
-}
-
 bool securebootWrite(uint32_t address, uint32_t bufferSize, uint8_t *buffer)
 {
     if ((address == SECUREBOOT_PROTECTED_FLAG_ADDRESS) && (bufferSize == SECUREBOOT_PROTECTED_FLAG_SIZE))
     {
         return securebootSetProtectedFlag(buffer[0]);
     }
-    else if ((address == SECUREBOOT_ENABLED_FLAG_ADDRESS) && (bufferSize == SECUREBOOT_ENABLED_FLAG_SIZE))
-    {
-        return securebootSetEnabledFlag(buffer[0]);
-    }
     else if ((address == SECUREBOOT_DEVICE_INFO_ADDRESS) && (bufferSize == SECUREBOOT_DEVICE_INFO_WRITE_SIZE))
     {
         return securebootSetDeviceInfo((deviceInfo_t *)buffer);
+    }
+    else if ((address == SECUREBOOT_DEVICE_SIGNATURE_ADDRESS) && (bufferSize == SECUREBOOT_DEVICE_SIGNATURE_SIZE))
+    {
+        return securebootSetDeviceInfoSignature(buffer);
     }
     else
     {
         return false;
     }
 }
-

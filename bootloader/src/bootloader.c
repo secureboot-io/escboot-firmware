@@ -84,7 +84,6 @@ void processCmd(uint8_t *packet, size_t packetSize)
             memcpy(buffer, packet, packetSize);
             resp[0] = ACK;
             writeBuffer(resp, 1);
-            //printf("receiveBuffer, size=%d\n", packetSize);
             return;
         }
     }
@@ -93,41 +92,33 @@ void processCmd(uint8_t *packet, size_t packetSize)
     switch(command) 
     {
         case CMD_KEEP_ALIVE:
-            //printf("CMD_KEEP_ALIVE\n");
             resp[0] = NACK_BAD_COMMAND;
             writeBuffer(resp, 1);
             break;
 
         case CMD_RUN:
-            //printf("CMD_RUN\n");
             resp[0] = ACK;
             writeBuffer(resp, 1);
             break;
 
         case CMD_SET_BUFFER:
-            //printf("CMD_SET_BUFFER: %d\n", bufferSize);
-            //resp[0] = ACK;
             receiveBuffer = true;
             bufferSize = (packet[2] << 8) | packet[3];
-            //writeBuffer(resp, 1);
             break;
 
         case CMD_SET_ADDRESS:
             address = 0x08000000 + (packet[2] << 8 | packet[3]);
             resp[0] = ACK;
             writeBuffer(resp, 1);
-            //printf("CMD_SET_ADDRESS: %08x\n", (unsigned int) address);
             break;
 
         case CMD_PROG_FLASH:
-            //printf("CMD_PROG_FLASH\n");
             if(securebootWrite(address, bufferSize, buffer))
             {
                 resp[0] = ACK;
             }
             else if(bl_is_valid_app_address(address) && bl_is_valid_app_address(address + bufferSize - 1))
             {
-                //printf("CMD_PROG_FLASH: valid address\n");
                 resp[0] = ACK;
                 flash_write(buffer, bufferSize, address);
             }
@@ -140,7 +131,6 @@ void processCmd(uint8_t *packet, size_t packetSize)
             break;
 
         case CMD_VERIFY_FLASH:
-            //printf("CMD_VERIFY_FLASH\n");
             bufferSize = packet[1];
             if(securebootRead(address, bufferSize, resp))
             {
@@ -150,7 +140,6 @@ void processCmd(uint8_t *packet, size_t packetSize)
             }
             else if(bl_is_valid_app_address(address) && bl_is_valid_app_address(address + bufferSize - 1))
             {
-                //printf("CMD_VERIFY_FLASH: valid address\n");
                 memcpy(resp, (const void*) address, bufferSize);
                 makeCrc(resp, bufferSize);
                 resp[bufferSize + 2] = ACK;
@@ -194,7 +183,7 @@ bool check_boot_init(uint8_t *buf, size_t len)
     return false;
 }
 
-bool rebootPending = false;
+volatile bool rebootPending = false;
 
 void bl_reboot()
 {
@@ -205,16 +194,9 @@ int bl_main()
 {
     printf("initializing\n");
     securebootInit();
-    //uint8_t oldc = 0;
-    //printf("testing 5 sec\n");
-    // uint32_t mi = millis();
-    // while (millis() - mi < 5000)
-    // {
-    //     printf("testing\n");
-    // }
+
     pinInit();
 	
-
     uint8_t resp[256];
     uint32_t bytesToReceive;
 
@@ -238,7 +220,6 @@ int bl_main()
         else
         {
             int cmdBytes = getCommandBytes(buf[0]);
-            //printf("command = %02x, bytes = %d\n", buf[0], cmdBytes);
             if(cmdBytes == -1)
             {
                 resp[0] = NACK_BAD_COMMAND;
@@ -256,21 +237,19 @@ int bl_main()
         {
             connected = true;
             writeBuffer(deviceInfo, 9);
-            //printf("boot init\n");
             continue;
         }
         if (checkCrc(buf, outLen))
         {
             processCmd(buf, outLen - 2);
-            //hexdump(buf, outLen);
             continue;
         }
         if(rebootPending)
         {
+            printf("Rebooting\n");
             bl_target_reboot();
         }
-        //printf("invalid bytes\n");
-        //hexdump(buf, outLen);
+
         resp[0] = NACK_BAD_CRC;
         writeBuffer(resp, 1);
     }
