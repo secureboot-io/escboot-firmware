@@ -18,6 +18,9 @@ elseif(CMAKE_BUILD_TYPE MATCHES Release)
   message(STATUS "Build type: Release")
 endif()
 
+set(CROSS_COMPILE_PREFIX arm-none-eabi-)
+include(${STM32_CMAKE_DIR}/cmake/gcc-arm-none-eabi.cmake)
+
 # add source folder
 add_subdirectory(bootloader)
 

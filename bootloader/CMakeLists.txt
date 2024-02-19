@@ -1,6 +1,5 @@
 ## Setup cross-compile toolchain 
-set(CROSS_COMPILE_PREFIX arm-none-eabi-)
-include(${STM32_CMAKE_DIR}/cmake/gcc-arm-none-eabi.cmake)
+
 
 # Target-specific flags
 set(MCU_ARCH ARMCM3)

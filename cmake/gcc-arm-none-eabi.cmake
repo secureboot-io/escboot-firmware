@@ -3,6 +3,16 @@ set(CMAKE_SYSTEM_NAME   Generic)
 set(CMAKE_SYSTEM_VERSION  1)
 set(CMAKE_SYSTEM_PROCESSOR  Arm)
 
+set(TOOLCHAIN_DIR ${PROJECT_BINARY_DIR}/external/toolchain)
+
+set(CROSS_COMPILE_PREFIX ${TOOLCHAIN_DIR}/bin/arm-none-eabi-)
+
+if(NOT EXISTS ${TOOLCHAIN_DIR})
+    file(DOWNLOAD https://armkeil.blob.core.windows.net/developer/Files/downloads/gnu/13.2.rel1/binrel/arm-gnu-toolchain-13.2.rel1-x86_64-arm-none-eabi.tar.xz ${TOOLCHAIN_DIR}/toolchain.tar.xz SHOW_PROGRESS)
+    execute_process(COMMAND tar --strip-components=1 -xvf ${TOOLCHAIN_DIR}/toolchain.tar.xz WORKING_DIRECTORY ${TOOLCHAIN_DIR})
+    execute_process(COMMAND rm ${TOOLCHAIN_DIR}/toolchain.tar.xz)
+endif()
+
 # specify the cross compiler
 set(CMAKE_C_COMPILER ${CROSS_COMPILE_PREFIX}gcc)
 set(CMAKE_CXX_COMPILER ${CROSS_COMPILE_PREFIX}g++)
