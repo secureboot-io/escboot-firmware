@@ -49,6 +49,7 @@ bool crypto_ecc_verify(uint8_t *data, size_t dataLength, uint8_t *signature, siz
         printf("cmox_hash_compute failed, ret=%d\n", (int)hretval);
         return false;
     }
+    hexdump(hash, CMOX_SHA256_SIZE);
 
     cmox_ecc_construct(&Ecc_Ctx, CMOX_ECC256_MATH_FUNCS, Working_Buffer, sizeof(Working_Buffer));
 

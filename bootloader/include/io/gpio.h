@@ -42,11 +42,14 @@
 extern "C" {
 #endif
 
-void pinSetInputPullDownMode();
-void pinSetOutputMode();
+void pinSetInputPullUp();
+void pinSetInputPullDown();
+void pinSetInputPullNone();
+void pinSetOutput();
 void pinInit();
 void pinWrite(bool set);
 bool pinRead();
+bool pinHasSignal();
 
 #ifdef __cplusplus
 } // extern "C"

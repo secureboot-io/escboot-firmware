@@ -13,6 +13,40 @@
 secureboot_t __attribute__((section(".secureboot"))) secureboot = {
     .bytes = {0xFF, 0xFF}};
 
+bool securebootVerifyFirmwareSignature(uint8_t *signature)
+{
+    if (!crypto_ecc_startup())
+    {
+        return false;
+    }
+    if (!crypto_ecc_verify((uint8_t*)FLASH_APPLICATION_START_ADDRESS, FLASH_APPLICATION_SIZE, signature, 64, secureboot.devInfo.manufacturerPublicKey, 64))
+    {
+        crypto_ecc_cleanup();
+        return false;
+    }
+    crypto_ecc_cleanup();
+    return true;
+}
+
+bool securebootOk()
+{
+    if(securebootIsProtected())
+    {
+        if(securebootVerifyFirmwareSignature(secureboot.firmwareSignature)) {
+            printf("Firmware signature verified\n");
+            return true;
+        } else {
+            printf("Firmware signature verification failed\n");
+            return false;
+        }
+    }
+    else
+    {
+        printf("Secureboot is disabled\n");
+        return true;
+    }
+}
+
 bool securebootInit()
 {
     return true;
@@ -94,9 +128,29 @@ bool securebootSetDeviceInfo(deviceInfo_t *deviceInfo)
     return true;
 }
 
+bool securebootSetFirmwareSignature(uint8_t *buffer)
+{
+    secureboot_t sb;
+    if (!securebootIsProtected())
+    {
+        return false;
+    }
+
+    memcpy(&sb, &secureboot, sizeof(secureboot_t));
+    memcpy(sb.firmwareSignature, buffer, sizeof(secureboot.firmwareSignature));
+    flash_write(sb.bytes, sizeof(secureboot_t), (uint32_t)&secureboot);
+    return true;
+}
+
 bool securebootGetDeviceInfo(uint8_t *buffer)
 {
     memcpy(buffer, &secureboot.devInfo, sizeof(deviceInfo_t));
+    return true;
+}
+
+bool securebootGetFirmwareSignature(uint8_t *buffer)
+{
+    memcpy(buffer, secureboot.firmwareSignature, sizeof(secureboot.firmwareSignature));
     return true;
 }
 
@@ -119,6 +173,10 @@ bool securebootRead(uint32_t address, uint32_t bufferSize, uint8_t *buffer)
     else if ((address == SECUREBOOT_DEVICE_SIGNATURE_ADDRESS) && (bufferSize == SECUREBOOT_DEVICE_SIGNATURE_SIZE))
     {
         return securebootGetDeviceInfoSignature(buffer);
+    }
+    else if ((address == SECUREBOOT_FIRMWARE_SIGNATURE_ADDRESS) && (bufferSize == SECUREBOOT_FIRMWARE_SIGNATURE_SIZE))
+    {
+        return securebootGetFirmwareSignature(buffer);
     }
     else
     {
@@ -174,6 +232,10 @@ bool securebootWrite(uint32_t address, uint32_t bufferSize, uint8_t *buffer)
     else if ((address == SECUREBOOT_DEVICE_SIGNATURE_ADDRESS) && (bufferSize == SECUREBOOT_DEVICE_SIGNATURE_SIZE))
     {
         return securebootSetDeviceInfoSignature(buffer);
+    }
+    else if ((address == SECUREBOOT_FIRMWARE_SIGNATURE_ADDRESS) && (bufferSize == SECUREBOOT_FIRMWARE_SIGNATURE_SIZE))
+    {
+        return securebootSetFirmwareSignature(buffer);
     }
     else
     {

@@ -253,6 +253,26 @@ static void MX_GPIO_Init(void)
     /* USER CODE END MX_GPIO_Init_2 */
 }
 
+typedef void (*pFunction)(void);
+pFunction JumpToApplication;
+uint32_t JumpAddress;
+void bl_target_app(){
+
+	__disable_irq();
+	JumpAddress = *(__IO uint32_t*) (0x8001000 + 4);
+	uint8_t value = *(uint8_t*)(0x8007c00);
+
+	if (value != 0x01){      // check first byte of eeprom to see if its programmed, if not do not jump
+        printf("app not found\n");
+		bl_target_reboot();
+	}
+
+    JumpToApplication = (pFunction) JumpAddress;
+    __set_MSP(*(__IO uint32_t*) APPLICATION_ADDRESS);
+    JumpToApplication();
+
+}
+
 /* USER CODE BEGIN 4 */
 
 /* USER CODE END 4 */

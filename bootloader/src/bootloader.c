@@ -99,6 +99,14 @@ void processCmd(uint8_t *packet, size_t packetSize)
         case CMD_RUN:
             resp[0] = ACK;
             writeBuffer(resp, 1);
+            if(securebootOk())
+            {
+                bl_target_app();
+            }
+            else
+            {
+                printf("CMD_RUN: secureboot failed\n");
+            }
             break;
 
         case CMD_SET_BUFFER:
@@ -192,10 +200,16 @@ void bl_reboot()
 
 int bl_main()
 {
-    printf("initializing\n");
     securebootInit();
-
     pinInit();
+
+    if(!pinHasSignal())
+    {
+        if(securebootOk())
+        {
+            bl_target_app();
+        }
+    }
 	
     uint8_t resp[256];
     uint32_t bytesToReceive;
@@ -204,7 +218,7 @@ int bl_main()
     {
         uint8_t buf[512];
         size_t outLen;
-        pinSetInputPullDownMode();
+        pinSetInputPullUp();
         if(!readChar(buf))
         {
             continue;

@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.0.0)
+cmake_minimum_required(VERSION 3.9)
 project(am32secureboot C CXX ASM)
 
 # adjust project folder name if necessary
@@ -17,6 +17,10 @@ if(CMAKE_BUILD_TYPE MATCHES Debug)
 elseif(CMAKE_BUILD_TYPE MATCHES Release)
   message(STATUS "Build type: Release")
 endif()
+
+# include(CheckIPOSupported)
+# check_ipo_supported(RESULT supported OUTPUT error)
+# set(CMAKE_INTERPROCEDURAL_OPTIMIZATION TRUE)
 
 set(CROSS_COMPILE_PREFIX arm-none-eabi-)
 include(${STM32_CMAKE_DIR}/cmake/gcc-arm-none-eabi.cmake)

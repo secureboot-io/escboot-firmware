@@ -82,7 +82,7 @@ bool readBuffer(uint8_t *buffer, size_t bufferLen, size_t *outLen) {
 	int i = 0;
 
 	//
-	pinSetInputPullDownMode();
+	pinSetInputPullUp();
 
 	// Read specified number of bytes
 	while(i < bufferLen) {
@@ -105,7 +105,7 @@ bool writeBuffer(uint8_t *buffer, size_t bufferLen) {
 	bool success;
 
 	//
-	pinSetOutputMode();
+	pinSetOutput();
 
 	while(bufferLen--)
 	{

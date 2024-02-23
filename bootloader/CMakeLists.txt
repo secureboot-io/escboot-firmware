@@ -19,9 +19,9 @@ option(USE_HAL_LIB "Enable HAL library" ON)
 option(USE_SYSTEM_VIEW "Enable Segger SystemView library" OFF)
 
 ## auto-set variables from user input
-set(MCU_FLAGS "${CPU} -mthumb ${FPU} ${FLOAT_ABI} -O3 -ffunction-sections -fdata-sections -std=c17")
-set(LINK_FLAGS "${MCU_FLAGS} -Wl,--gc-sections -Wl,--print-memory-usage")
-set(EXTRA_LINK_FLAGS "-Wl,-Map=${PROJECT_NAME}.map,--cref,--no-warn-mismatch -specs=nano.specs -specs=nosys.specs")
+set(MCU_FLAGS "${CPU} -mthumb ${FPU} ${FLOAT_ABI} -O2 -Os -std=c17 --specs=nano.specs")
+set(LINK_FLAGS "-Wl,--gc-sections -Wl,--print-memory-usage -O2 -Os")
+set(EXTRA_LINK_FLAGS "-Wl,-Map=${PROJECT_NAME}.map,--cref,--no-warn-mismatch --specs=nosys.specs")
 include(${STM32_CMAKE_DIR}/cmake/stm32-gcc-flags.cmake)
 
 # print summary of configurations
@@ -98,7 +98,7 @@ set(CUBEMX_SRC
 )
 add_executable(${ELF_TARGET} ${CUBEMX_SRC})
 target_compile_definitions(${ELF_TARGET} PUBLIC -D${MCU_FAMILY})
-target_link_libraries(${ELF_TARGET} PUBLIC cmox libcrc cmsis stm32f0xx_hal -lc -lm -lnosys)
+target_link_libraries(${ELF_TARGET} PUBLIC cmox libcrc cmsis stm32f0xx_hal  -lm -lc )
 target_link_libraries(${ELF_TARGET} PRIVATE -T${LINKER_SCRIPT} ${EXTRA_LINK_FLAGS})
 target_include_directories(${ELF_TARGET} PUBLIC
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include/target/stm32f051>)
