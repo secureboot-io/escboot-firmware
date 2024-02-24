@@ -30,8 +30,16 @@
  * This file contains the logging functions for the bootloader.
  */
 
+typedef enum {
+    LOG_LEVEL_TRACE,
+    LOG_LEVEL_DEBUG,
+    LOG_LEVEL_INFO,
+    LOG_LEVEL_WARN,
+    LOG_LEVEL_ERROR,
+    LOG_LEVEL_FATAL
+} logLevel_t;
 
 void logInit(void);
-void logWrite(const char *fmt, ...);
+void logWrite(logLevel_t level, const char *file, int line, const char *fmt, ...);
 
-#define LOG_TRACE(fmt, ...) logWrite("TRACE: %s:%d: " fmt, __FILE__, __LINE__, ##__VA_ARGS__)
+#define LOG_TRACE(fmt, ...) logWrite(LOG_LEVEL_TRACE, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
