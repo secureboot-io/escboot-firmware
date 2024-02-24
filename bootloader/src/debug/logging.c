@@ -34,7 +34,7 @@ void logWrite(logLevel_t level, const char *file, int line, const char *fmt, ...
     char buf[1024];
     va_list args;
     va_start(args, fmt);
-    int len = snprintf(buf, sizeof(buf), "\033[31;1m%s\033[0m: " ANSI_FILE "%s:%d:" ANSI_RESET " ", logLevelNames[level], file, line);
+    int len = snprintf(buf, sizeof(buf), "\033[31;1m%s\033[0m " ANSI_FILE "%s:%d:" ANSI_RESET " ", logLevelNames[level], file, line);
     len += vsnprintf(buf + len, sizeof(buf) - len, fmt, args);
     snprintf(buf + len, sizeof(buf) - len, "%s", "\r\n");
     va_end(args);

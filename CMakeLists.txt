@@ -1,5 +1,5 @@
 cmake_minimum_required(VERSION 3.9)
-project(am32secureboot C CXX ASM)
+project(escboot C CXX ASM)
 
 # adjust project folder name if necessary
 # set(STM32_PROJ_FOLDER stm32proj)
