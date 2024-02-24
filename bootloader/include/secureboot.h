@@ -27,8 +27,8 @@
  *
  * Description
  * -----------
- * The headerfile include/checksum.h contains the definitions and prototypes
- * for routines that can be used to calculate several kinds of checksums.
+ * The headerfile include/secureboot.h contains the definitions and prototypes
+ * for routines that can be used to interact with the secure boot module.
  */
 #ifndef DEF_SECUREBOOT_H
 #define DEF_SECUREBOOT_H
@@ -98,7 +98,7 @@ extern "C" {
  * @note This function should be called before any other secure boot functions
  * 
  */
-bool securebootInit();
+bool sbInit();
 
 /**
  * @brief Writes to secure boot area, this is used to run secureboot specific commands
@@ -109,7 +109,7 @@ bool securebootInit();
  * @return true if successful
  * @return false if failed
  */
-bool securebootWrite(uint32_t address, uint32_t bufferSize, uint8_t *buffer);
+bool sbWrite(uint32_t address, uint32_t bufferSize, uint8_t *buffer);
 
 /**
  * @brief Reads from secure boot area
@@ -120,7 +120,7 @@ bool securebootWrite(uint32_t address, uint32_t bufferSize, uint8_t *buffer);
  * @return true if successful
  * @return false if failed
  */
-bool securebootRead(uint32_t address, uint32_t bufferSize, uint8_t *buffer);
+bool sbRead(uint32_t address, uint32_t bufferSize, uint8_t *buffer);
 
 /**
  * @brief Enables protection
@@ -128,7 +128,7 @@ bool securebootRead(uint32_t address, uint32_t bufferSize, uint8_t *buffer);
  * @return true if successful
  * @return false if failed
  */
-bool securebootProtect();
+bool sbProtect();
 
 /**
  * @brief Disables protection
@@ -136,7 +136,7 @@ bool securebootProtect();
  * @return true if successful
  * @return false if failed
  */
-bool securebootUnprotect();
+bool sbUnprotect();
 
 /**
  * @brief Checks if protection is enabled
@@ -144,23 +144,23 @@ bool securebootUnprotect();
  * @return true if protected
  * @return false if not protected
  */
-bool securebootIsProtected();
+bool sbIsProtected();
 
 /**
  * @brief Gets device info signature
 */
-bool securebootGetDeviceInfoSignature(uint8_t *buffer);
+bool sbGetDeviceInfoSignature(uint8_t *buffer);
 
 /**
  * @brief Sets device info signature
 
 */
-bool secureBootSetDeviceInfoSignature(uint8_t *buffer);
+bool sbSetDeviceInfoSignature(uint8_t *buffer);
 
 /**
  * @brief Checks if secure boot is enabled, signature is valid
 */
-bool securebootOk();
+bool sbOk();
 
 #ifdef __cplusplus
 }

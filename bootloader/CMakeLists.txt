@@ -93,6 +93,7 @@ set(CUBEMX_SRC
     ${TARGET_STM32F051_SRC}
     src/utils/hexdump.c
     src/io/serialwire.c
+    src/debug/logging.c
     src/bootloader.c
     src/secureboot.c
 )

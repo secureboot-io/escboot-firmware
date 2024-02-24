@@ -1,6 +1,6 @@
 /*
- * Library: am32secureboot
- * File:    io/gpio.h
+ * Library: escboot
+ * File:    bootloader/include/io/uart.h
  * Author:  Sidhant Goel
  *
  * This file is licensed under the MIT License as stated below
@@ -27,16 +27,21 @@
  *
  * Description
  * -----------
- * The headerfile include/checksum.h contains the definitions and prototypes
- * for routines that can be used to calculate several kinds of checksums.
+ * The headerfile include/io/uart.h contains the definitions and prototypes
+ * for routines that can be used to interact with the UART.
  */
 
 #ifndef DEF_IO_UART_H
 #define DEF_IO_UART_H
 
+#include <stdint.h>
+
 #ifdef __cplusplus
 extern "C" {
 #endif
+
+void uartTransmit(uint8_t data);
+void uartInit();
 
 #ifdef __cplusplus
 }

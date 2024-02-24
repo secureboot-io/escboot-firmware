@@ -27,8 +27,8 @@
  *
  * Description
  * -----------
- * The headerfile include/checksum.h contains the definitions and prototypes
- * for routines that can be used to calculate several kinds of checksums.
+ * The headerfile include/utils/millis.h contains the definitions and prototypes
+ * for routines that can be used to get the current time in milliseconds.
  */
 
 #ifndef DEF_MILLIS_H

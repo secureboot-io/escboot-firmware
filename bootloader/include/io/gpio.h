@@ -1,6 +1,6 @@
 /*
- * Library: am32secureboot
- * File:    io/gpio.h
+ * Library: escboot
+ * File:    bootloader/include/io/gpio.h
  * Author:  Sidhant Goel
  *
  * This file is licensed under the MIT License as stated below
@@ -27,8 +27,8 @@
  *
  * Description
  * -----------
- * The headerfile include/checksum.h contains the definitions and prototypes
- * for routines that can be used to calculate several kinds of checksums.
+ * The headerfile include/io/gpio.h contains the definitions and prototypes
+ * for routines that can be used to interact with the GPIO pins.
  */
 
 #ifndef DEF_IO_GPIO_H
@@ -42,13 +42,56 @@
 extern "C" {
 #endif
 
+/**
+ * @brief Set the pin as an input with a pull-up
+ * 
+*/
 void pinSetInputPullUp();
+
+/**
+ * @brief Set the pin as an input with a pull-down
+ * 
+*/
 void pinSetInputPullDown();
+
+/**
+ * @brief Set the pin as an input with no pull
+ * 
+*/
 void pinSetInputPullNone();
+
+/**
+ * @brief Set the pin as an output
+ * 
+*/
 void pinSetOutput();
+
+/**
+ * @brief initialize the pin
+ * 
+*/
 void pinInit();
+
+/**
+ * @brief Write to the pin
+ * 
+ * @param set pin state
+*/
 void pinWrite(bool set);
+
+/**
+ * @brief Read from the pin
+ * 
+ * @return bool pin state
+*/
 bool pinRead();
+
+/**
+ * @brief Check if the pin has a signal
+ * 
+ * @return bool true if the pin has a signal
+ * @return bool false if the pin does not have a signal
+*/
 bool pinHasSignal();
 
 #ifdef __cplusplus

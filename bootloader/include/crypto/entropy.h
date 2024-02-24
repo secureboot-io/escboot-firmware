@@ -27,8 +27,8 @@
  *
  * Description
  * -----------
- * The headerfile include/checksum.h contains the definitions and prototypes
- * for routines that can be used to calculate several kinds of checksums.
+ * The headerfile include/crypto/entropy.h contains the definitions and prototypes
+ * for routines that can be used to gather entropy from the hardware.
  */
 #ifndef ENTROPY_H
 #define ENTROPY_H

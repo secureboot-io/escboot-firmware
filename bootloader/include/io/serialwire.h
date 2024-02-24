@@ -1,6 +1,6 @@
 /*
- * Library: am32secureboot
- * File:    io/gpio.h
+ * Library: escboot
+ * File:    bootloader/include/io/serialwire.h
  * Author:  Sidhant Goel
  *
  * This file is licensed under the MIT License as stated below
@@ -27,8 +27,8 @@
  *
  * Description
  * -----------
- * The headerfile include/checksum.h contains the definitions and prototypes
- * for routines that can be used to calculate several kinds of checksums.
+ * The headerfile include/io/serialwire.h contains the definitions and prototypes
+ * for routines that can be used to interact with the serial wire interface.
  */
 
 #ifndef DEF_SERIALWIRE_H

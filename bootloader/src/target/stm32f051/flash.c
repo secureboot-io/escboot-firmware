@@ -18,7 +18,7 @@
 uint32_t FLASH_FKEY1 =0x45670123;
 uint32_t FLASH_FKEY2 =0xCDEF89AB;
 
-void flash_erase_page(uint32_t add)
+void flErasePage(uint32_t add)
 {
 	// unlock flash
 	while ((FLASH->SR & FLASH_SR_BSY) != 0) {
@@ -48,7 +48,7 @@ void flash_erase_page(uint32_t add)
 	 SET_BIT(FLASH->CR, FLASH_CR_LOCK);
 }
 
-void flash_write(const uint8_t *data, int length, uint32_t add)
+void flWrite(const uint8_t *data, int length, uint32_t add)
 {
 	uint16_t data_to_FLASH[length / 2];
 	memset(data_to_FLASH, 0, length / 2);

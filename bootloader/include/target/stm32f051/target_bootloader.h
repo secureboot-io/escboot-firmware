@@ -1,5 +1,5 @@
 /**
- * Library: am32secureboot
+ * Library: escboot
  * File:    bootloader/include/target_bootloader.h
  * Author:  Sidhant Goel
  *
@@ -27,14 +27,15 @@
  *
  * Description
  * -----------
- * The headerfile include/checksum.h contains the definitions and prototypes
- * for routines that can be used to calculate several kinds of checksums.
+ * The headerfile include/target_bootloader.h contains the definitions and prototypes
+ * for routines that can be used to interact with the bootloader.
  */
 
 #ifndef DEF_TARGET_BOOTLOADER_H
 #define DEF_TARGET_BOOTLOADER_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 #ifdef __cplusplus
 extern "C" {
@@ -46,8 +47,15 @@ extern "C" {
 #define FLASH_APPLICATION_START_ADDRESS     (FLASH_BASE_ADDRESS + FLASH_APPLICATION_OFFSET)
 #define FLASH_APPLICATION_END_ADDRESS       (FLASH_APPLICATION_START_ADDRESS + FLASH_APPLICATION_SIZE)
 
-void bl_target_reboot();
-void bl_target_app();
+/**
+ * @brief reboot
+*/
+void blTargetReboot();
+
+/**
+ * @brief goto application
+*/
+bool blTargetGotoApplication();
 
 #ifdef __cplusplus
 } // extern "C"

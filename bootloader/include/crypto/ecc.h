@@ -1,5 +1,5 @@
 /*
- * Library: am32secureboot
+ * Library: escboot
  * File:    bootloader/include/crypto/ecc.h
  * Author:  Sidhant Goel
  *
@@ -27,8 +27,8 @@
  *
  * Description
  * -----------
- * The headerfile include/checksum.h contains the definitions and prototypes
- * for routines that can be used to calculate several kinds of checksums.
+ * The headerfile include/crypto/ecc.h contains the definitions and prototypes
+ * for routines that can be used to generate and verify ECC signatures.
  */
 #ifndef DEF_BOOTLOADER_INCLUDE_CRYPTO_ECC_H
 #define DEF_BOOTLOADER_INCLUDE_CRYPTO_ECC_H
@@ -44,7 +44,7 @@ extern "C" {
 /**
  * @brief Initialize the ECC module
 */
-bool crypto_ecc_startup();
+bool cryptoInitECC();
 
 /**
  * @brief Generate a new ECC key pair
@@ -56,12 +56,26 @@ bool crypto_ecc_startup();
  * @return true if the key pair was generated successfully
  * @return false if the key pair could not be generated
  */
-bool crypto_ecc_generate(uint8_t *privateKey, size_t privateKeyLength, uint8_t *publicKey, size_t publicKeyLength);
-bool crypto_ecc_verify(uint8_t *data, size_t dataLength, uint8_t *signature, size_t signatureLength, uint8_t *publicKey, size_t publicKeyLength);
+bool cryptoGenerateECCKeyPair(uint8_t *privateKey, size_t privateKeyLength, uint8_t *publicKey, size_t publicKeyLength);
+
+/**
+ * @brief Verify an ECC signature
+ * 
+ * @param data The data to verify
+ * @param dataLength The length of the data
+ * @param signature The signature to verify
+ * @param signatureLength The length of the signature
+ * @param publicKey The public key to use for verification
+ * @param publicKeyLength The length of the public key
+ * @return true if the signature is valid
+ * @return false if the signature is invalid
+*/
+bool cryptoVerifyECC(uint8_t *data, size_t dataLength, uint8_t *signature, size_t signatureLength, uint8_t *publicKey, size_t publicKeyLength);
+
 /**
  * @brief Clean up the ECC module
 */
-void crypto_ecc_cleanup();
+void cryptoCleanECC();
 
 #ifdef __cplusplus
 }

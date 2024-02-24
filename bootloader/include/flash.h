@@ -27,8 +27,8 @@
  *
  * Description
  * -----------
- * The headerfile include/checksum.h contains the definitions and prototypes
- * for routines that can be used to calculate several kinds of checksums.
+ * The headerfile include/flash.h contains the definitions and prototypes
+ * for routines that can be used to interact with the flash memory.
  */
 
 #ifndef DEF_FLASH_H
@@ -40,8 +40,8 @@
 extern "C" {
 #endif
 
-void flash_erase_page(uint32_t add);
-void flash_write(const uint8_t *data, int length, uint32_t add);
+void flErasePage(uint32_t add);
+void flWrite(const uint8_t *data, int length, uint32_t add);
 
 #ifdef __cplusplus
 } // extern "C"

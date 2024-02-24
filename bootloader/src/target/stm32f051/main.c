@@ -8,65 +8,34 @@
 #include "stm32f0xx_ll_utils.h"
 #include "stm32f0xx_ll_cortex.h"
 #include "cmox_crypto.h"
+#include "stdio.h"
 
 void SystemClock_Config(void);
-static void MX_USART1_UART_Init(void);
 
-void bl_target_reboot()
+void blTargetReboot()
 {
     NVIC_SystemReset();
 }
 
-typedef void (*pFunction)(void);
+typedef __attribute__((noreturn)) void (*pFunction)(void);
 pFunction JumpToApplication;
 uint32_t JumpAddress;
-void bl_target_app(){
 
-	__disable_irq();
-	JumpAddress = *(__IO uint32_t*) (0x8001000 + 4);
-	uint8_t value = *(uint8_t*)(0x8007c00);
-
-	if (value != 0x01){      // check first byte of eeprom to see if its programmed, if not do not jump
-        printf("app not found\n");
-		bl_target_reboot();
-	}
-
-    JumpToApplication = (pFunction) JumpAddress;
-    __set_MSP(*(__IO uint32_t*) 0x8001000);
-    JumpToApplication();
-
-}
-
-uint8_t UART1_Rx()
+bool blTargetGotoApplication()
 {
-    // wait receive not empty flag
-    while (!LL_USART_IsActiveFlag_RXNE(USART1))
-        ;
-    return LL_USART_ReceiveData8(USART1);
-}
 
-void UART1_Tx(uint8_t data)
-{
-    // wait transmit empty flag
-    while (!LL_USART_IsActiveFlag_TXE(USART1))
-        ;
-    LL_USART_TransmitData8(USART1, data);
-}
+    __disable_irq();
+    JumpAddress = *(__IO uint32_t *)(0x8001000 + 4);
+    uint8_t value = *(uint8_t *)(0x8007c00);
 
-/* USER CODE END 0 */
-int __io_putchar(int ch)
-{
-    if (ch == '\n')
+    if (value != 0x01)
     {
-        UART1_Tx('\r');
+        return false;
     }
-    UART1_Tx(ch);
-    return 0;
-}
 
-int __io_getchar(void)
-{
-    return UART1_Rx();
+    JumpToApplication = (pFunction)JumpAddress;
+    __set_MSP(*(__IO uint32_t *)0x8001000);
+    JumpToApplication();
 }
 
 int main(void)
@@ -75,9 +44,8 @@ int main(void)
     LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
 
     SystemClock_Config();
-    MX_USART1_UART_Init();
 
-    bl_main();
+    blMain();
 }
 
 void SystemClock_Config(void)
@@ -112,67 +80,6 @@ void SystemClock_Config(void)
     LL_SetSystemCoreClock(48000000);
     LL_RCC_SetUSARTClockSource(LL_RCC_USART1_CLKSOURCE_PCLK1);
     LL_SYSTICK_EnableIT();
-}
-
-static void MX_USART1_UART_Init(void)
-{
-    //LL_USART_InitTypeDef USART_InitStruct = {0};
-
-    //LL_GPIO_InitTypeDef GPIO_InitStruct = {0};
-
-    /* Peripheral clock enable */
-    LL_APB1_GRP2_EnableClock(LL_APB1_GRP2_PERIPH_USART1);
-
-    LL_AHB1_GRP1_EnableClock(LL_AHB1_GRP1_PERIPH_GPIOA);
-    /**USART1 GPIO Configuration
-    PA9   ------> USART1_TX
-    PA10   ------> USART1_RX
-    */
-    // GPIO_InitStruct.Pin = LL_GPIO_PIN_9;
-    // GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-    LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_9, LL_GPIO_MODE_ALTERNATE);
-    LL_GPIO_SetPinMode(GPIOA, LL_GPIO_PIN_10, LL_GPIO_MODE_ALTERNATE);
-    // GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
-    LL_GPIO_SetPinSpeed(GPIOA, LL_GPIO_PIN_9, LL_GPIO_SPEED_FREQ_HIGH);
-    LL_GPIO_SetPinSpeed(GPIOA, LL_GPIO_PIN_10, LL_GPIO_SPEED_FREQ_HIGH);
-    // GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-    LL_GPIO_SetPinOutputType(GPIOA, LL_GPIO_PIN_9, LL_GPIO_OUTPUT_PUSHPULL);
-    LL_GPIO_SetPinOutputType(GPIOA, LL_GPIO_PIN_10, LL_GPIO_OUTPUT_PUSHPULL);
-    // GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-    LL_GPIO_SetPinPull(GPIOA, LL_GPIO_PIN_9, LL_GPIO_PULL_NO);
-    LL_GPIO_SetPinPull(GPIOA, LL_GPIO_PIN_10, LL_GPIO_PULL_NO);
-    // GPIO_InitStruct.Alternate = LL_GPIO_AF_1;
-    LL_GPIO_SetAFPin_8_15(GPIOA, LL_GPIO_PIN_9, LL_GPIO_AF_1);
-    LL_GPIO_SetAFPin_8_15(GPIOA, LL_GPIO_PIN_10, LL_GPIO_AF_1);
-    // LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-    // GPIO_InitStruct.Pin = LL_GPIO_PIN_10;
-    // GPIO_InitStruct.Mode = LL_GPIO_MODE_ALTERNATE;
-    // GPIO_InitStruct.Speed = LL_GPIO_SPEED_FREQ_HIGH;
-    // GPIO_InitStruct.OutputType = LL_GPIO_OUTPUT_PUSHPULL;
-    // GPIO_InitStruct.Pull = LL_GPIO_PULL_NO;
-    // GPIO_InitStruct.Alternate = LL_GPIO_AF_1;
-    // LL_GPIO_Init(GPIOA, &GPIO_InitStruct);
-
-    /* USER CODE BEGIN USART1_Init 1 */
-
-    /* USER CODE END USART1_Init 1 */
-    LL_USART_SetTransferDirection(USART1, LL_USART_DIRECTION_TX_RX);
-    LL_USART_ConfigCharacter(USART1, LL_USART_DATAWIDTH_8B, LL_USART_PARITY_NONE, LL_USART_STOPBITS_1);
-    LL_USART_SetHWFlowCtrl(USART1, LL_USART_HWCONTROL_NONE);
-    //LL_USART_SetOverSampling(USART1, LL_USART_OVERSAMPLING_16);
-    LL_USART_SetBaudRate(USART1, LL_RCC_GetUSARTClockFreq(LL_RCC_USART1_CLKSOURCE), LL_USART_OVERSAMPLING_16, 115200);
-    // USART_InitStruct.BaudRate = 115200;
-    // USART_InitStruct.DataWidth = LL_USART_DATAWIDTH_8B;
-    // USART_InitStruct.StopBits = LL_USART_STOPBITS_1;
-    // USART_InitStruct.Parity = LL_USART_PARITY_NONE;
-    // USART_InitStruct.TransferDirection = LL_USART_DIRECTION_TX_RX;
-    // USART_InitStruct.HardwareFlowControl = LL_USART_HWCONTROL_NONE;
-    // USART_InitStruct.OverSampling = LL_USART_OVERSAMPLING_16;
-    // LL_USART_Init(USART1, &USART_InitStruct);
-    LL_USART_DisableIT_CTS(USART1);
-    LL_USART_ConfigAsyncMode(USART1);
-    LL_USART_Enable(USART1);
 }
 
 void Error_Handler(void)

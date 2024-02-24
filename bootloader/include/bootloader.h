@@ -27,8 +27,8 @@
  *
  * Description
  * -----------
- * The headerfile include/checksum.h contains the definitions and prototypes
- * for routines that can be used to calculate several kinds of checksums.
+ * The headerfile bootloader/include/bootloader.h contains the definitions and prototypes
+ * for routines that can be used to interact with the bootloader.
  */
 
 #ifndef DEF_BOOTLOADER_H
@@ -65,9 +65,9 @@ extern "C" {
 #define NACK_BAD_CRC        0xC2
 #define NACK_BAD_ADDRESS    0xC3
 
-int bl_main();
-bool bl_is_valid_app_address(intptr_t address);
-void bl_reboot();
+int blMain();
+bool blIsValidAppAddress(intptr_t address);
+void blRequestReboot();
 
 #ifdef __cplusplus
 } // extern "C"

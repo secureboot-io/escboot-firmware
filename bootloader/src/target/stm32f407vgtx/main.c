@@ -263,7 +263,7 @@ void bl_target_app(){
 	uint8_t value = *(uint8_t*)(0x8007c00);
 
 	if (value != 0x01){      // check first byte of eeprom to see if its programmed, if not do not jump
-        printf("app not found\n");
+        // printf("app not found\n");
 		bl_target_reboot();
 	}
 

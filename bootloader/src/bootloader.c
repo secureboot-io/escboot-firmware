@@ -8,10 +8,11 @@
 
 #include "io/serialwire.h"
 #include "io/gpio.h"
-#include "utils/hexdump.h"
+// #include "utils/hexdump.h"
 #include "flash.h"
 #include "utils/millis.h"
 #include "secureboot.h"
+#include "debug/logging.h"
 
 uint8_t deviceInfo[9] = {0x34, 0x37, 0x31, 0x00, 0x1f, 0x06, 0x06, 0x01, 0x30};
 
@@ -99,14 +100,14 @@ void processCmd(uint8_t *packet, size_t packetSize)
         case CMD_RUN:
             resp[0] = ACK;
             writeBuffer(resp, 1);
-            if(securebootOk())
-            {
-                bl_target_app();
-            }
-            else
-            {
-                printf("CMD_RUN: secureboot failed\n");
-            }
+            // if(securebootOk())
+            // {
+            //     bl_target_app();
+            // }
+            // else
+            // {
+            //     printf("CMD_RUN: secureboot failed\n");
+            // }
             break;
 
         case CMD_SET_BUFFER:
@@ -121,18 +122,18 @@ void processCmd(uint8_t *packet, size_t packetSize)
             break;
 
         case CMD_PROG_FLASH:
-            if(securebootWrite(address, bufferSize, buffer))
+            if(sbWrite(address, bufferSize, buffer))
             {
                 resp[0] = ACK;
             }
-            else if(bl_is_valid_app_address(address) && bl_is_valid_app_address(address + bufferSize - 1))
+            else if(blIsValidAppAddress(address) && blIsValidAppAddress(address + bufferSize - 1))
             {
                 resp[0] = ACK;
-                flash_write(buffer, bufferSize, address);
+                flWrite(buffer, bufferSize, address);
             }
             else
             {
-                printf("CMD_PROG_FLASH: invalid address\n");
+                // printf("CMD_PROG_FLASH: invalid address\n");
                 resp[0] = NACK_BAD_ADDRESS;
             }
             writeBuffer(resp, 1);
@@ -140,13 +141,13 @@ void processCmd(uint8_t *packet, size_t packetSize)
 
         case CMD_VERIFY_FLASH:
             bufferSize = packet[1];
-            if(securebootRead(address, bufferSize, resp))
+            if(sbRead(address, bufferSize, resp))
             {
                 makeCrc(resp, bufferSize);
                 resp[bufferSize + 2] = ACK;
                 writeBuffer(resp, bufferSize + 3);
             }
-            else if(bl_is_valid_app_address(address) && bl_is_valid_app_address(address + bufferSize - 1))
+            else if(blIsValidAppAddress(address) && blIsValidAppAddress(address + bufferSize - 1))
             {
                 memcpy(resp, (const void*) address, bufferSize);
                 makeCrc(resp, bufferSize);
@@ -155,7 +156,7 @@ void processCmd(uint8_t *packet, size_t packetSize)
             }
             else
             {
-                printf("CMD_VERIFY_FLASH: invalid address %08x\n", (unsigned int) address);
+                // printf("CMD_VERIFY_FLASH: invalid address %08x\n", (unsigned int) address);
                 resp[0] = NACK_BAD_ADDRESS;
                 writeBuffer(resp, 1);
             }
@@ -164,11 +165,11 @@ void processCmd(uint8_t *packet, size_t packetSize)
         default:
             resp[0] = NACK_BAD_COMMAND;
             writeBuffer(resp, 1);
-            printf("NAK: bad cmd = %02x\n", command);
+            // printf("NAK: bad cmd = %02x\n", command);
     }
 }
 
-bool bl_is_valid_app_address(intptr_t address)
+bool blIsValidAppAddress(intptr_t address)
 {
     return address >= FLASH_APPLICATION_START_ADDRESS && address < FLASH_APPLICATION_END_ADDRESS;
 }
@@ -193,23 +194,26 @@ bool check_boot_init(uint8_t *buf, size_t len)
 
 volatile bool rebootPending = false;
 
-void bl_reboot()
+void blRequestReboot()
 {
     rebootPending = true;
 }
 
-int bl_main()
+int blMain()
 {
-    securebootInit();
+    logInit();
+    sbInit();
     pinInit();
 
     if(!pinHasSignal())
     {
-        if(securebootOk())
+        if(sbOk())
         {
-            bl_target_app();
+            // bl_target_app();
         }
     }
+
+    LOG_TRACE("Bootloader started");
 	
     uint8_t resp[256];
     uint32_t bytesToReceive;
@@ -261,7 +265,7 @@ int bl_main()
         if(rebootPending)
         {
             printf("Rebooting\n");
-            bl_target_reboot();
+            blTargetReboot();
         }
 
         resp[0] = NACK_BAD_CRC;

@@ -1,5 +1,5 @@
 /*
- * Library: am32secureboot
+ * Library: escboot
  * File:    bootloader/include/target/stm32f051/stm32f0xx_it.h
  * Author:  Sidhant Goel
  *
@@ -27,8 +27,8 @@
  *
  * Description
  * -----------
- * The headerfile include/checksum.h contains the definitions and prototypes
- * for routines that can be used to calculate several kinds of checksums.
+ * The headerfile include/target/stm32f051/stm32f0xx_it.h contains the definitions and prototypes
+ * for the interrupt service routines for the STM32F051 microcontroller.
  */
 #ifndef __STM32F0xx_IT_H
 #define __STM32F0xx_IT_H

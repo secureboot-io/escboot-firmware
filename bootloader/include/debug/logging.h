@@ -1,11 +1,11 @@
 /*
- * Library: am32secureboot
- * File:    bootloader/include/utils/hexdump.h
+ * Library: escboot
+ * File:    bootloader/include/debug/logging.h
  * Author:  Sidhant Goel
  *
  * This file is licensed under the MIT License as stated below
  *
- * Copyright (c) 2024 Sidhant Goel
+ * Copyright (c) 2024 Sidhant Goel 
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -27,24 +27,11 @@
  *
  * Description
  * -----------
- * The headerfile include/checksum.h contains the definitions and prototypes
- * for routines that can be used to calculate several kinds of checksums.
+ * This file contains the logging functions for the bootloader.
  */
 
-#ifndef DEF_UTILS_HEXDUMP_H
-#define DEF_UTILS_HEXDUMP_H
 
-#include <stdint.h>
-#include <stddef.h>
+void logInit(void);
+void logWrite(const char *fmt, ...);
 
-#ifdef __cplusplus
-extern "C" {
-#endif
-
-void hexdump(uint8_t* buffer, size_t len);
-
-#ifdef __cplusplus
-} // extern "C"
-#endif
-
-#endif // DEF_UTILS_HEXDUMP_H
+#define LOG_TRACE(fmt, ...) logWrite("TRACE: %s:%d: " fmt, __FILE__, __LINE__, ##__VA_ARGS__)

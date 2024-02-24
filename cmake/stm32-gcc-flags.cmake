@@ -3,7 +3,7 @@
 if(CMAKE_BUILD_TYPE MATCHES Debug)
 set(DBG_FLAGS "-g3 -gdwarf-2")
 elseif(CMAKE_BUILD_TYPE MATCHES Release)
-set(DBG_FLAGS "")
+set(DBG_FLAGS "-g3 -gdwarf-2")
 else()
 endif()
 
