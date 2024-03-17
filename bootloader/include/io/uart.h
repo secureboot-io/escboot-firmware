@@ -42,6 +42,7 @@ extern "C" {
 
 void uartTransmit(uint8_t data);
 void uartInit();
+void uartFlush();
 
 #ifdef __cplusplus
 }

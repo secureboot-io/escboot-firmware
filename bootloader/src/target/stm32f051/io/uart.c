@@ -6,7 +6,7 @@
 #include "stm32f0xx_ll_rcc.h"
 
 volatile bool isTxComplete = true;
-uint8_t txRingBuffer[256];
+uint8_t txRingBuffer[1024];
 volatile uint32_t txRingBufferHead = 0;
 volatile uint32_t txRingBufferTail = 0;
 
@@ -66,6 +66,11 @@ void uartTransmit(uint8_t data)
         LL_USART_EnableIT_TXE(USART1);
     }
     __enable_irq();
+}
+
+void uartFlush()
+{
+    while (!isTxComplete);
 }
 
 void uartInit(void)

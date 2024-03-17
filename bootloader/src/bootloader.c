@@ -13,6 +13,7 @@
 #include "utils/millis.h"
 #include "secureboot.h"
 #include "debug/logging.h"
+#include "io/uart.h"
 
 uint8_t deviceInfo[9] = {0x34, 0x37, 0x31, 0x00, 0x1f, 0x06, 0x06, 0x01, 0x30};
 
@@ -95,19 +96,14 @@ void processCmd(uint8_t *packet, size_t packetSize)
         case CMD_KEEP_ALIVE:
             resp[0] = NACK_BAD_COMMAND;
             writeBuffer(resp, 1);
+            LOG_TRACE("NAK: bad cmd = %02x", command);
             break;
 
         case CMD_RUN:
             resp[0] = ACK;
             writeBuffer(resp, 1);
-            // if(securebootOk())
-            // {
-            //     bl_target_app();
-            // }
-            // else
-            // {
-            //     printf("CMD_RUN: secureboot failed\n");
-            // }
+            // blBoot();
+            LOG_TRACE("CMD_RUN: boot");
             break;
 
         case CMD_SET_BUFFER:
@@ -133,7 +129,7 @@ void processCmd(uint8_t *packet, size_t packetSize)
             }
             else
             {
-                // printf("CMD_PROG_FLASH: invalid address\n");
+                LOG_TRACE("CMD_PROG_FLASH: invalid address %08x", (unsigned int) address);
                 resp[0] = NACK_BAD_ADDRESS;
             }
             writeBuffer(resp, 1);
@@ -156,7 +152,7 @@ void processCmd(uint8_t *packet, size_t packetSize)
             }
             else
             {
-                // printf("CMD_VERIFY_FLASH: invalid address %08x\n", (unsigned int) address);
+                LOG_TRACE("CMD_VERIFY_FLASH: invalid address %08x", (unsigned int) address);
                 resp[0] = NACK_BAD_ADDRESS;
                 writeBuffer(resp, 1);
             }
@@ -199,6 +195,15 @@ void blRequestReboot()
     rebootPending = true;
 }
 
+void blBoot()
+{
+    if(sbOk())
+    {
+        uartFlush();
+        blTargetGotoApplication();
+    }
+}
+
 int blMain()
 {
     logInit();
@@ -207,10 +212,7 @@ int blMain()
 
     if(!pinHasSignal())
     {
-        if(sbOk())
-        {
-            // bl_target_app();
-        }
+        blBoot();
     }
 
     LOG_TRACE("Bootloader started");
@@ -264,7 +266,7 @@ int blMain()
         }
         if(rebootPending)
         {
-            printf("Rebooting\n");
+            uartFlush();
             blTargetReboot();
         }
 

@@ -68,6 +68,7 @@ extern "C" {
 int blMain();
 bool blIsValidAppAddress(intptr_t address);
 void blRequestReboot();
+void blBoot();
 
 #ifdef __cplusplus
 } // extern "C"

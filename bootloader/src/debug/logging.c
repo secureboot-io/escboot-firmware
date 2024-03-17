@@ -44,3 +44,20 @@ void logWrite(logLevel_t level, const char *file, int line, const char *fmt, ...
         uartTransmit(*p++);
     }
 }
+
+void logWriteDump(logLevel_t level, const char *file, int line, const char *tag, const uint8_t *data, uint32_t length)
+{
+    char buf[1024];
+    int len = snprintf(buf, sizeof(buf), "\033[31;1m%s\033[0m " ANSI_FILE "%s:%d:" ANSI_RESET " ", logLevelNames[level], file, line);
+    len += snprintf(buf + len, sizeof(buf) - len, "%s: Dumping %d bytes of data:\r\n", tag, (int)length);
+    for (uint32_t i = 0; i < length; i++)
+    {
+        len += snprintf(buf + len, sizeof(buf) - len, "%02x", data[i]);
+    }
+    snprintf(buf + len, sizeof(buf) - len, "%s", "\r\n");
+    const char *p = buf;
+    while (*p)
+    {
+        uartTransmit(*p++);
+    }
+}

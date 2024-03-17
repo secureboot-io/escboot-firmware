@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <assert.h>
-// #include "utils/hexdump.h"
+#include "debug/logging.h"
 
 #define FLAG_ENABLED 0x00
 #define FLAG_DISABLED 0xFF
@@ -19,7 +19,9 @@ bool sbIsFirmwareSignatureValid(uint8_t *signature)
     {
         return false;
     }
-    if (!cryptoVerifyECC((uint8_t*)FLASH_APPLICATION_START_ADDRESS, FLASH_APPLICATION_SIZE, signature, 64, secureboot.devInfo.manufacturerPublicKey, 64))
+    if (!cryptoVerifyECC((uint8_t *)FLASH_APPLICATION_DATA_ADDRESS,
+                         FLASH_APPLICATION_DATA_END_ADDRESS - FLASH_APPLICATION_DATA_ADDRESS,
+                         signature, 64, secureboot.devInfo.manufacturerPublicKey, 64))
     {
         cryptoCleanECC();
         return false;
@@ -30,19 +32,22 @@ bool sbIsFirmwareSignatureValid(uint8_t *signature)
 
 bool sbOk()
 {
-    if(sbIsProtected())
+    if (sbIsProtected())
     {
-        if(sbIsFirmwareSignatureValid(secureboot.firmwareSignature)) {
-            // printf("Firmware signature verified\n");
+        if (sbIsFirmwareSignatureValid((uint8_t*)FLASH_SIGNATURE_ADDRESS))
+        {
+            LOG_INFO("Firmware signature verification passed");
             return true;
-        } else {
-            // printf("Firmware signature verification failed\n");
+        }
+        else
+        {
+            LOG_ERROR("Firmware signature verification failed");
             return false;
         }
     }
     else
     {
-        // printf("Secureboot is disabled\n");
+        LOG_INFO("Secure boot is disabled");
         return true;
     }
 }
@@ -104,7 +109,7 @@ bool sbSetDeviceInfoSignature(uint8_t *buffer)
         return false;
     }
     cryptoCleanECC();
-    
+
     // Write signature
     memcpy(&sb, &secureboot, sizeof(secureboot_t));
     memcpy(sb.deviceSignature, buffer, sizeof(secureboot.deviceSignature));
@@ -124,20 +129,7 @@ bool sbSetDeviceInfo(deviceInfo_t *deviceInfo)
     }
     memcpy(&sb, &secureboot, sizeof(secureboot_t));
     memcpy(&sb.devInfo, deviceInfo, SECUREBOOT_DEVICE_INFO_WRITE_SIZE);
-    flWrite(sb.bytes, sizeof(secureboot_t), (uint32_t)&secureboot);
-    return true;
-}
-
-bool sbSetFirmwareSignature(uint8_t *buffer)
-{
-    secureboot_t sb;
-    if (!sbIsProtected())
-    {
-        return false;
-    }
-
-    memcpy(&sb, &secureboot, sizeof(secureboot_t));
-    memcpy(sb.firmwareSignature, buffer, sizeof(secureboot.firmwareSignature));
+    flErasePage((uint32_t)&secureboot);
     flWrite(sb.bytes, sizeof(secureboot_t), (uint32_t)&secureboot);
     return true;
 }
@@ -148,12 +140,6 @@ bool sbGetDeviceInfo(uint8_t *buffer)
     return true;
 }
 
-bool sbGetFirmwareSignature(uint8_t *buffer)
-{
-    memcpy(buffer, secureboot.firmwareSignature, sizeof(secureboot.firmwareSignature));
-    return true;
-}
-
 bool sbIsProtected()
 {
     return secureboot.protectedFlag == FLAG_ENABLED;
@@ -161,6 +147,7 @@ bool sbIsProtected()
 
 bool sbRead(uint32_t address, uint32_t bufferSize, uint8_t *buffer)
 {
+    LOG_TRACE("sbRead: address=%08x, bufferSize=%08x", (unsigned int)address, (unsigned int)bufferSize);
     if ((address == SECUREBOOT_PROTECTED_FLAG_ADDRESS) && (bufferSize == SECUREBOOT_PROTECTED_FLAG_SIZE))
     {
         buffer[0] = sbGetProtectedFlag();
@@ -173,10 +160,6 @@ bool sbRead(uint32_t address, uint32_t bufferSize, uint8_t *buffer)
     else if ((address == SECUREBOOT_DEVICE_SIGNATURE_ADDRESS) && (bufferSize == SECUREBOOT_DEVICE_SIGNATURE_SIZE))
     {
         return sbGetDeviceInfoSignature(buffer);
-    }
-    else if ((address == SECUREBOOT_FIRMWARE_SIGNATURE_ADDRESS) && (bufferSize == SECUREBOOT_FIRMWARE_SIGNATURE_SIZE))
-    {
-        return sbGetFirmwareSignature(buffer);
     }
     else
     {
@@ -232,10 +215,6 @@ bool sbWrite(uint32_t address, uint32_t bufferSize, uint8_t *buffer)
     else if ((address == SECUREBOOT_DEVICE_SIGNATURE_ADDRESS) && (bufferSize == SECUREBOOT_DEVICE_SIGNATURE_SIZE))
     {
         return sbSetDeviceInfoSignature(buffer);
-    }
-    else if ((address == SECUREBOOT_FIRMWARE_SIGNATURE_ADDRESS) && (bufferSize == SECUREBOOT_FIRMWARE_SIGNATURE_SIZE))
-    {
-        return sbSetFirmwareSignature(buffer);
     }
     else
     {

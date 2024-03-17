@@ -9,6 +9,7 @@
 #include "stm32f0xx_ll_cortex.h"
 #include "cmox_crypto.h"
 #include "stdio.h"
+#include "debug/logging.h"
 
 void SystemClock_Config(void);
 
@@ -23,17 +24,18 @@ uint32_t JumpAddress;
 
 bool blTargetGotoApplication()
 {
-
-    __disable_irq();
     JumpAddress = *(__IO uint32_t *)(0x8001000 + 4);
     uint8_t value = *(uint8_t *)(0x8007c00);
 
     if (value != 0x01)
     {
+        LOG_TRACE("application not found, not jumping to application");
         return false;
     }
 
     JumpToApplication = (pFunction)JumpAddress;
+
+    __disable_irq();
     __set_MSP(*(__IO uint32_t *)0x8001000);
     JumpToApplication();
 }

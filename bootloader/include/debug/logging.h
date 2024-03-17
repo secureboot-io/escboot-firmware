@@ -29,6 +29,10 @@
  * -----------
  * This file contains the logging functions for the bootloader.
  */
+#ifndef DEF_DEBUG_LOGGING_H
+#define DEF_DEBUG_LOGGING_H
+
+#include <stdint.h>
 
 typedef enum {
     LOG_LEVEL_TRACE,
@@ -39,7 +43,34 @@ typedef enum {
     LOG_LEVEL_FATAL
 } logLevel_t;
 
+#ifdef __cplusplus
+extern "C" {
+#endif
+
 void logInit(void);
 void logWrite(logLevel_t level, const char *file, int line, const char *fmt, ...);
+void logWriteDump(logLevel_t level, const char *file, int line, const char *tag, const uint8_t *data, uint32_t length);
 
+#ifdef __cplusplus
+}
+#endif
+
+#ifdef ENABLE_LOGGING
 #define LOG_TRACE(fmt, ...) logWrite(LOG_LEVEL_TRACE, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define LOG_DEBUG(fmt, ...) logWrite(LOG_LEVEL_DEBUG, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define LOG_INFO(fmt, ...) logWrite(LOG_LEVEL_INFO, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define LOG_WARN(fmt, ...) logWrite(LOG_LEVEL_WARN, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define LOG_ERROR(fmt, ...) logWrite(LOG_LEVEL_ERROR, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define LOG_FATAL(fmt, ...) logWrite(LOG_LEVEL_FATAL, __FILE__, __LINE__, fmt, ##__VA_ARGS__)
+#define LOG_DUMP(tag, data, length) logWriteDump(LOG_LEVEL_DEBUG, __FILE__, __LINE__, tag, data, length)
+#else
+#define LOG_TRACE(fmt, ...)
+#define LOG_DEBUG(fmt, ...)
+#define LOG_INFO(fmt, ...)
+#define LOG_WARN(fmt, ...)
+#define LOG_ERROR(fmt, ...)
+#define LOG_FATAL(fmt, ...)
+#define LOG_DUMP(tag, data, length)
+#endif
+
+#endif // DEF_DEBUG_LOGGING_H
